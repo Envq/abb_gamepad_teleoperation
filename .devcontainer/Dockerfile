@@ -29,4 +29,5 @@ RUN cd abb_libegm/build && cmake .. && make
 # Additional dependecies
 RUN apt-get -y install --no-install-recommends \
     bash-completion \
-    iputils-ping
+    iputils-ping \
+    clang-format

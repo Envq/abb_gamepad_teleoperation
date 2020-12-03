@@ -1,0 +1,56 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "trajectory_joint",
+            "type": "shell",
+            "command": "./trajectory_joint",
+            "args": [],
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+            "group": "build",
+            "presentation": {
+                "focus": true
+            }
+        },
+		{
+			"label": "cmake",
+			"type": "shell",
+			"command": "cmake ..",
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+            "group": "build",
+            "presentation": {
+                "focus": true
+            }
+		},
+		{
+			"label": "make",
+			"type": "shell",
+			"command": "make",
+			"options": {
+				"cwd": "${workspaceFolder}/build"
+			},
+            "group": "build",
+            "presentation": {
+                "focus": true
+            }
+		},
+        {
+            "label": "format (clang-format)",
+            "type": "shell",
+            "command": "clang-format",
+            "args": [
+                "-i",
+                "${workspaceFolder}/src/*.cpp",
+                "${workspaceFolder}/include/*.hpp"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "never"
+            }
+        },
+	]
+}

@@ -25,7 +25,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 # FILES
-string(TOLOWER "example1" BIN_NAME)
 set(INCLUDES
     ${Boost_INCLUDE_DIR} 
     ${PROTOBUF_INCLUDE_DIRS}
@@ -42,14 +41,15 @@ set(LIBRERIES
 
 ##################################################################
 # BUILD EXECUTABLE
-add_executable(${BIN_NAME} ${PROJECT_SOURCE_DIR}/main.cpp)
+# string(TOLOWER "main" BIN_NAME)
+# add_executable(${BIN_NAME} ${PROJECT_SOURCE_DIR}/src/main.cpp)
+# target_include_directories(${BIN_NAME} PRIVATE ${INCLUDES})
+# target_link_libraries(${BIN_NAME} ${LIBRERIES})
+
+string(TOLOWER "trajectory_joint" BIN_NAME)
+add_executable(${BIN_NAME} ${PROJECT_SOURCE_DIR}/src/trajectory_joint.cpp)
 target_include_directories(${BIN_NAME} PRIVATE ${INCLUDES})
 target_link_libraries(${BIN_NAME} ${LIBRERIES})
-
-#add_executable(${PROJECT_NAME}_joint_trajectory_node src/a1_joint_trajectory_node.cpp)
-#set_target_properties(${PROJECT_NAME}_joint_trajectory_node PROPERTIES OUTPUT_NAME a1_joint_trajectory_node PREFIX "")
-#add_dependencies(${PROJECT_NAME}_joint_trajectory_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(${PROJECT_NAME}_joint_trajectory_node ${catkin_LIBRARIES})
 
 
 

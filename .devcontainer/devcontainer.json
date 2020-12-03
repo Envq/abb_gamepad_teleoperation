@@ -16,7 +16,8 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"austin.code-gnu-global",
-		"twxs.cmake"
+		"twxs.cmake",
+		"xaver.clang-format"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
