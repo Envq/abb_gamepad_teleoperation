@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
     // in reply to the EGM client's request).
     //
     // Note: It is important to set the correct port number here,
-    //       as well as configuring the settings for the EGM client in thre
-    //       robot controller. If using the included RobotStudio Pack&Go file,
-    //       then port 6511 = ROB_1, 6512 = ROB_2, etc.
+    //       as well as configuring the settings for the EGM client in the robot
+    //       controller. If using the included RobotStudio Pack&Go file,
+    //       then port 6510 = ROB_1
     abb::egm::EGMTrajectoryInterface egm_interface(io_service, 6510);
 
     if (!egm_interface.isInitialized()) {
