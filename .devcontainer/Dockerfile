@@ -20,11 +20,14 @@ RUN mkdir -p workspaces/
 WORKDIR workspaces/
 RUN git clone https://github.com/ros-industrial/abb_libegm.git && \ 
     cd abb_libegm && \
-    git checkout 6613e3165ea68118c31f336ddbb7f970a7b0e489
+    git checkout 6613e3165ea68118c31f336ddbb7f970a7b0e489 && \
+    rm -rf .git/
 
 # Build EGM librayr
 RUN mkdir -p abb_libegm/build 
-RUN cd abb_libegm/build && cmake .. && make
+RUN cd abb_libegm/build && \
+    cmake .. && \
+    make
 
 # Additional dependecies
 RUN apt-get -y install --no-install-recommends \
