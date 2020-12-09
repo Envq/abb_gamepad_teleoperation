@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     //       as well as configuring the settings for the EGM client in thre robot
     //       controller. If using the included RobotStudio Pack&Go file, then port 6511 =
     //       ROB_1, 6512 = ROB_2, etc.
-    abb::egm::EGMControllerInterface egm_interface(io_service, 6513, configuration);
+    abb::egm::EGMControllerInterface egm_interface(io_service, 6510, configuration);
 
     if (!egm_interface.isInitialized()) {
         std::cerr << "EGM interface failed to initialize (e.g. due to port already bound)"
