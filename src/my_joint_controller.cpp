@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-    std::cout << "========== Joint controller (open-loop) sample ==========" << std::endl;
+    std::cout << "========== Pose controller (open-loop) sample ==========" << std::endl;
 
 
     // INITIALIZE ########################################################################
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     while (true) {
         // Wait for a new EGM message from the EGM client (with a timeout in ms).
         // Note: the message should arrive in about 1/EGM_RATE seconds.
-        if (egm_interface.waitForMessage(4000)) {
+        if (egm_interface.waitForMessage(400)) {
             // Read the message received from the EGM client
             egm_interface.read(&input);
             sequence_number = input.header().sequence_number() - seq_num_offset;
