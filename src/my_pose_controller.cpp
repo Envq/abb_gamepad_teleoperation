@@ -124,9 +124,9 @@ int main(int argc, char **argv) {
 
             // Print info
             if (sequence_number % (1 * EGM_RATE) == 0)
-                std::cout << "[" << sequence_number << "] References: "
-                          << "X position = " << position_reference << " [mm] | "
-                          << "Y orientation (Euler) = " << orientation_reference
+                std::cout << "[" << sequence_number << "] References: \n"
+                          << "\tX position = " << position_reference << " [mm]\n"
+                          << "\tY orientation (Euler) = " << orientation_reference
                           << " [degrees]" << std::endl;
 
         } else {
