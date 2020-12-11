@@ -35,6 +35,7 @@ MODULE Module1
     ! Home joint
     CONST jointtarget Home:=[[0,0,0,0,30,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST jointtarget End:=[[0,0,-90,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    
     ! Identifier for the EGM correction.
     VAR egmident egm_id;
     ! Limits for convergance: 
@@ -47,6 +48,10 @@ MODULE Module1
     ! EGM pose frames.
     CONST pose egm_correction_frame := [[0, 0, 0], [1, 0, 0, 0]];
     CONST pose egm_sensor_frame     := [[0, 0, 0], [1, 0, 0, 0]];
+    
+    ! EGM SENSOR
+    CONST string EGM_SENSOR := "EGM_REMOTE_SENSOR";
+    !CONST string EGM_SENSOR := "EGM_LOCAL_SENSOR";
     !***********************************************************
     
     PROC main()
@@ -61,7 +66,7 @@ MODULE Module1
         EGMGetId egm_id;
         
         ! Setup the EGM communication.
-        EGMSetupUC ROB_1, egm_id, "default", "EGM_SENSOR" \Joint;
+        EGMSetupUC ROB_1, egm_id, "default", EGM_SENSOR \Joint;
         
         ! Prepare for an EGM communication session. (sampleRate in ms)
         EGMActJoint egm_id
@@ -92,7 +97,7 @@ MODULE Module1
         EGMGetId egm_id;
         
         ! Setup the EGM communication.
-        EGMSetupUC ROB_1, egm_id, "default", "EGM_SENSOR", \Pose;
+        EGMSetupUC ROB_1, egm_id, "default", EGM_SENSOR, \Pose;
             
         ! Prepare for an EGM communication session.
         EGMActPose egm_id,

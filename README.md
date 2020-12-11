@@ -31,15 +31,23 @@ Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.
 2. Configure controller
     - go to Controller tab -> Configuration -> Communication 
     - go to "UDP Unicast Device" and add:
-        - Name=EGM_SENSOR
+        - Name=EGM_REMOTE_SENSOR
         - type=UDPUC
         - RemoteAddress=REMOTE_IP
-        - RemotePortNumber/LocalPortNumber=REMOTE_PORT
+        - RemotePortNumber=6510
+        - LocalPortNumber=0
+    - go to "UDP Unicast Device" and add:
+        - Name=EGM_LOCAL_SENSOR
+        - type=UDPUC
+        - RemoteAddress=HOST_IP
+        - RemotePortNumber=6510
+        - LocalPortNumber=0
     - restart controller
 
 3. Add Rapid code
     - go to RAPID tab
     - open the Module1 and insert in it the code present here in RAPID/Module1.mod
+    - for "CONST string EGM_SENSOR" select EGM_LOCAL_SENSOR if RobotStudio runs on the same machine as the container else select EGM_REMOTE_SENSOR
 
 4. Open container
     - open with VSCode this repository and use "Remote-Containers:Reopen in container"
