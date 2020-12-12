@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
 
 
     // INITIALIZE ########################################################################
-    std::cout << "1. Initialize..." << std::endl;
+    std::cout << "1: Initialize..." << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
     boost::asio::io_service io_service;
     boost::thread_group thread_group;

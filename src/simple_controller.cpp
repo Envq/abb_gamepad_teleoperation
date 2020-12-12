@@ -19,7 +19,8 @@ int main(int argc, char **argv) {
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         egm.waitConnection();
-        std::cout << "3. Start control loop..." << std::endl;
+
+        std::cout << "3: Start control loop..." << std::endl;
         double offset = 10;  // [mm].
         int timeout = 400;   //[ms].
 
