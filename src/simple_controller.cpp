@@ -2,14 +2,15 @@
 #include <iostream>
 #include <stdexcept>
 
-// CONFIGS
+
+
+// CONFIGS ===============================================================================
 const int PORT = 6510;
 const double EGM_RATE = 250.0;
 
 
 
-// MAIN
-// ==================================================================================
+// MAIN ==================================================================================
 int main(int argc, char **argv) {
     std::cout << "========== Joystick controller ==========" << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
@@ -20,7 +21,6 @@ int main(int argc, char **argv) {
         std::cout << "1: Initialize..." << std::endl;
         simple_interface::EGMInterface egm =
             simple_interface::EGMInterface(io_service, thread_group, PORT, EGM_RATE);
-
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         auto initial_pose = egm.waitConnection();
@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
     } catch (std::runtime_error &err) {
         std::cerr << err.what() << std::endl;
     }
-
 
     // Clean Shutdown
     io_service.stop();

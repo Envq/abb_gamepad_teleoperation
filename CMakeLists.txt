@@ -85,6 +85,17 @@ TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE
 )
 TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
 
+STRING(TOLOWER "keyboard_controller" BIN_NAME)
+ADD_EXECUTABLE(${BIN_NAME} 
+    ${PROJECT_SOURCE_DIR}/src/${BIN_NAME}.cpp
+    ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
+)
+TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE 
+    ${INCLUDES}
+    ${PROJECT_SOURCE_DIR}/include
+)
+TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
+
 
 
 ##################################################################

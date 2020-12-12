@@ -40,7 +40,7 @@ class EGMInterface {
     // backup lastpose for check egm iusses
     Pose last_target_pose_;
     int errors_;
-    const int LIMIT_ERRORS_ = 5;  // [s] (Time after throw exception).
+    const int LIMIT_ERRORS_ = 10;  // [s] (Time after throw exception).
 
     // default wait timeout
     const int DEFAULT_TIMEOUT_ = 400;
