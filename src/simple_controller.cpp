@@ -4,10 +4,6 @@
 
 
 
-// DECLARATIONS ==========================================================================
-const int EGM_RATE = 250;  // [Hz] (EGM communication rate, specified by EGMActJoint).
-
-
 // MAIN
 // ==================================================================================
 int main(int argc, char **argv) {
@@ -32,9 +28,14 @@ int main(int argc, char **argv) {
         auto current_pose = initial_pose;
 
         while (true) {
+            // Get current pose
             auto pose = egm.waitForPose(timeout);
             std::cout << pose << std::endl;
+
+            // Update current pose
             current_pose.x += offset;
+
+            // Send new pose
             egm.sendPose(current_pose);
         }
 
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
     }
 
 
-    // SHUTDOWN
+    // Clean Shutdown
     io_service.stop();
     thread_group.join_all();
     return 0;
