@@ -11,12 +11,15 @@ struct Pose {
     double roll;   // arround x
     double pitch;  // arround y
     double yaw;    // arround z
-    Pose();
+    Pose() : x(0.0), y(0.0), z(0.0), roll(0.0), pitch(0.0), yaw(0.0){};
     Pose(const int x, const int y, const int z, const int roll, const int pitch,
          const int yaw)
         : x(x), y(y), z(z), roll(roll), pitch(pitch), yaw(yaw){};
     friend std::ostream &operator<<(std::ostream &stream, const Pose &pose);
+    friend bool operator==(const Pose &pose1, const Pose &pose2);
+    friend bool operator!=(const Pose &pose1, const Pose &pose2);
 };
+
 
 
 class EGMInterface {
@@ -31,11 +34,25 @@ class EGMInterface {
     abb::egm::wrapper::Input input_;
     abb::egm::wrapper::Output output_;
 
+    // Sample rate
+    const double EGM_RATE_;
+
+    // backup lastpose for check egm iusses
+    Pose last_target_pose_;
+    int errors_;
+    const int LIMIT_ERRORS_ = 5;  // [s] (Time after throw exception).
+
+    // default wait timeout
+    const int DEFAULT_TIMEOUT_ = 400;
+
   public:
     EGMInterface(boost::asio::io_service &io_service, boost::thread_group &thread_group,
-                 int port);
-    void waitConnection(int timeout = 500);
-    Pose waitForPose(int timeout);
-    void sendPose(Pose pose);
+                 const int port, const double egm_rate);
+    // Wait the start of the connection and then return current pose
+    Pose waitConnection(const int ms = 500);
+    // Wait the current pose else throw exception
+    Pose waitForPose(const int timeout);
+    // Sent to EGM client new pose
+    void sendPose(const Pose &pose);
 };
 }  // namespace simple_interface

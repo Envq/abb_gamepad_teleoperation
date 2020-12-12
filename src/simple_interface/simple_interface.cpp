@@ -15,12 +15,34 @@ std::ostream &operator<<(std::ostream &stream, const Pose &pose) {
     stream << "\tpitch: " << pose.pitch;
     stream << "\tyaw: " << pose.yaw << std::endl;
     return stream;
-}  // namespace simple_interface
+}
+
+bool operator==(const Pose &pose1, const Pose &pose2) {
+    if (pose1.x != pose2.x)
+        return false;
+    if (pose1.y != pose2.y)
+        return false;
+    if (pose1.z != pose2.z)
+        return false;
+    if (pose1.roll != pose2.roll)
+        return false;
+    if (pose1.pitch != pose2.pitch)
+        return false;
+    if (pose1.yaw != pose2.yaw)
+        return false;
+    return true;
+}
+
+bool operator!=(const Pose &pose1, const Pose &pose2) {
+    return !(pose1 == pose2);
+}
 
 
 // EGMInteface ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
-                           boost::thread_group &thread_group, int port) {
+                           boost::thread_group &thread_group, const int port,
+                           const double egm_rate)
+    : EGM_RATE_(egm_rate) {
     egm_interface_ptr_.reset(new abb::egm::EGMControllerInterface(io_service, port));
 
     // Check successful initialization
@@ -33,9 +55,12 @@ EGMInterface::EGMInterface(boost::asio::io_service &io_service,
 
     // Prepare outputs message
     output_.Clear();
+
+    // Initialize attributes
+    errors_ = 0;
 }
 
-void EGMInterface::waitConnection(int timeout) {
+Pose EGMInterface::waitConnection(const int ms) {
     while (true) {
         using namespace abb::egm::wrapper;
         if (egm_interface_ptr_->isConnected()) {
@@ -47,26 +72,38 @@ void EGMInterface::waitConnection(int timeout) {
             else if (status == Status_RAPIDExecutionState_RAPID_RUNNING)
                 break;
         }
-        boost::this_thread::sleep(boost::posix_time::milliseconds(timeout));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
     }
+    return waitForPose(400);
 }
 
-Pose EGMInterface::waitForPose(int timeout) {
+Pose EGMInterface::waitForPose(const int timeout) {
     // Wait for a new EGM message from the EGM client (with a timeout in ms).
     while (!egm_interface_ptr_->waitForMessage(timeout))
-        ;
+        throw std::runtime_error("End EGM session: timeout");
+
+    // Check iusses are too many
+    if (errors_ > LIMIT_ERRORS_ * EGM_RATE_)
+        throw std::runtime_error("End EGM session: client EGM is blocked");
+
     // Read the message received from the EGM client
     egm_interface_ptr_->read(&input_);
 
-    // Get input-pose
-    auto &pose = input_.feedback().robot().cartesian().pose();
+    // Get current pose
+    auto &input_pose = input_.feedback().robot().cartesian().pose();
+    auto current_pose = Pose(input_pose.position().x(), input_pose.position().y(),
+                             input_pose.position().z(), input_pose.euler().x(),
+                             input_pose.euler().y(), input_pose.euler().z());
+
+    // Check errors
+    if (last_target_pose_ != current_pose)
+        errors_++;
 
     // Return a Pose with input-pose values
-    return Pose(pose.position().x(), pose.position().y(), pose.position().z(),
-                pose.euler().x(), pose.euler().y(), pose.euler().z());
+    return current_pose;
 }
 
-void EGMInterface::sendPose(Pose pose) {
+void EGMInterface::sendPose(const Pose &pose) {
     // Prepare output-pose
     auto new_pose = output_.mutable_robot()->mutable_cartesian()->mutable_pose();
 
@@ -80,5 +117,8 @@ void EGMInterface::sendPose(Pose pose) {
 
     // Write references back to the EGM client.
     egm_interface_ptr_->write(output_);
+
+    // Update last_target_pose_
+    last_target_pose_ = pose;
 }
 }  // namespace simple_interface

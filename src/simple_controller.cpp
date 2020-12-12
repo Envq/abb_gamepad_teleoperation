@@ -2,6 +2,10 @@
 #include <iostream>
 #include <stdexcept>
 
+// CONFIGS
+const int PORT = 6510;
+const double EGM_RATE = 250.0;
+
 
 
 // MAIN
@@ -15,18 +19,16 @@ int main(int argc, char **argv) {
     try {
         std::cout << "1: Initialize..." << std::endl;
         simple_interface::EGMInterface egm =
-            simple_interface::EGMInterface(io_service, thread_group, 6510);
+            simple_interface::EGMInterface(io_service, thread_group, PORT, EGM_RATE);
+
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
-        egm.waitConnection();
+        auto initial_pose = egm.waitConnection();
+        auto current_pose = initial_pose;
 
         std::cout << "3: Start control loop..." << std::endl;
         double offset = 10;  // [mm].
         int timeout = 400;   //[ms].
-
-        // Get initial pose
-        auto initial_pose = egm.waitForPose(timeout);
-        auto current_pose = initial_pose;
 
         while (true) {
             // Get current pose
