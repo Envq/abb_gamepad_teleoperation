@@ -58,8 +58,8 @@ int main(int argc, char **argv) {
     abb::egm::wrapper::CartesianPose &input_pose =
         *input.mutable_feedback()->mutable_robot()->mutable_cartesian()->mutable_pose();
     abb::egm::wrapper::Output output;
-    abb::egm::wrapper::CartesianPose &output_pose =
-        *output.mutable_robot()->mutable_cartesian()->mutable_pose();
+    abb::egm::wrapper::CartesianPose *output_pose =
+        output.mutable_robot()->mutable_cartesian()->mutable_pose();
     int sequence_number = 0;  // [-] (sequence number of a received EGM message).
     double time = 0.0;        // [s] (elapsed time during an EGM communication session).
     double position_reference = 0.0;     // [mm].
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
                 initial_pose.CopyFrom(input_pose);
                 // Prepare outputs message
                 output.Clear();
-                output_pose.CopyFrom(input_pose);
+                output_pose->CopyFrom(input_pose);
 
             } else {
                 // Adjust time for manage the offset
@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
                     ->mutable_euler()
                     ->set_y(orientation_reference);
 
-                // output_pose.mutable_position()->set_x(position_reference);
-                // output_pose.mutable_euler()->set_y(orientation_reference);
+                // output_pose->mutable_position()->set_x(position_reference);
+                // output_pose->mutable_euler()->set_y(orientation_reference);
             }
 
             // Write references back to the EGM client.
