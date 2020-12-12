@@ -90,16 +90,22 @@ int main(int argc, char **argv) {
             } else {
                 // Adjust time for manage the offset
                 time = sequence_number / ((double)EGM_RATE);  // t = seq_n * 1/f
-                // Compute references for position (along X-axis),
-                // and orientation (around Y-axis).
-                position_reference =
-                    initial_pose.position().x() +
-                    POSITION_AMPLITUDE *
-                        (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI));
-                orientation_reference =
-                    initial_pose.euler().y() +
-                    ORIENTATION_AMPLITUDE *
-                        (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI));
+                // Compute references for position e orientation
+                const bool SIMPLE = false;  // true for linear motion up to singularity
+                if (SIMPLE) {
+                    position_reference =
+                        initial_pose.position().x() + 10 * sequence_number;
+                    orientation_reference = initial_pose.euler().y();
+                } else {
+                    position_reference =
+                        initial_pose.position().x() +
+                        POSITION_AMPLITUDE *
+                            (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI));
+                    orientation_reference =
+                        initial_pose.euler().y() +
+                        ORIENTATION_AMPLITUDE *
+                            (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI));
+                }
 
                 // Compute new pose reference for output
                 // Note: The references are relative to the frames specified by the
@@ -125,10 +131,9 @@ int main(int argc, char **argv) {
             // Print info
             if (sequence_number % (1 * EGM_RATE) == 0)
                 std::cout << "[" << sequence_number << "] References: \n"
-                          << "\tX position = " << position_reference << " [mm]\n"
-                          << "\tY orientation (Euler) = " << orientation_reference
+                          << "\tX position = " << input_pose.position().x() << " [mm]\n"
+                          << "\tY orientation (Euler) = " << input_pose.euler().y()
                           << " [degrees]" << std::endl;
-
         } else {
             // Timeout info
             std::cerr << "TIMEOUT" << std::endl;
@@ -136,7 +141,8 @@ int main(int argc, char **argv) {
     }
 
 
-    // SHUTDOWN ##########################################################################
+    // SHUTDOWN
+    // ##########################################################################
     io_service.stop();
     thread_group.join_all();
     return 0;
