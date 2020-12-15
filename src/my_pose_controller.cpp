@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     // JOINT CONTROLLER LOOP #############################################################
     // Constants
     const int EGM_RATE = 250;  // [Hz] (EGM communication rate, specified by EGMActJoint).
-    const double POSITION_AMPLITUDE = 100.0;     // [mm].
+    const double POSITION_AMPLITUDE = 45.0;      // [mm].
     const double ORIENTATION_AMPLITUDE = -10.0;  // [degrees].
     const double FREQUENCY = 0.25;               // [Hz].
 
