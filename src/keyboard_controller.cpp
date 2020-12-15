@@ -11,10 +11,8 @@ const int PORT = 6510;
 const double EGM_RATE = 250.0;
 
 
-
+// AUXILIARY FUNCTIONS ===================================================================
 namespace keyboard {
-
-// DECLARATIONS ==========================================================================
 const int X_POS = 'd';
 const int X_NEG = 'a';
 const int Y_POS = 'w';
@@ -22,8 +20,6 @@ const int Y_NEG = 's';
 const int EXIT = 'q';
 int command;
 
-
-// AUXILIARY FUNCTIONS ===================================================================
 int getch() {
     int ch;
     struct termios oldt;
@@ -50,7 +46,7 @@ void catcher() {
 // MAIN
 // ==================================================================================
 int main(int argc, char **argv) {
-    std::cout << "========== Joystick controller ==========" << std::endl;
+    std::cout << "========== Keyboard controller ==========" << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
     boost::asio::io_service io_service;
     boost::thread_group thread_group;
@@ -75,8 +71,7 @@ int main(int argc, char **argv) {
         while (true) {
             // Get current pose
             auto pose = egm.waitForPose(timeout);
-            // std::cout << pose << std::endl;
-            auto pose_bk = pose;
+            std::cout << pose << std::endl;
 
             // Perform new pose
             if (keyboard::command == keyboard::X_POS)
@@ -90,16 +85,11 @@ int main(int argc, char **argv) {
             else if (keyboard::command == keyboard::EXIT)
                 break;
 
-
-            std::cout << "- Command: " << keyboard::command << std::endl;
-            std::cout << "- delta X: " << pose.x - pose_bk.x << std::endl;
-            std::cout << "- delta Y: " << pose.y - pose_bk.y << std::endl;
-
             // Send new pose
             egm.sendPose(pose);
         }
 
-    } catch (std::runtime_error &err) {
+    } catch (std::runtime_error &err) {  // catch timeout and port error
         std::cerr << "\t" << err.what() << std::endl;
         thread_group.remove_thread(keyboard_catcher);
     }

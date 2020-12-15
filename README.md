@@ -80,7 +80,9 @@ I used these extensions:
 
 ---
 ## Author
-**Enrico Sgarbanti** [@**Envq**](https://github.com/Envq)
+**Enrico Sgarbanti** [@**Envq**](https://github.com/Envq).
+
+Note: the [abb_libegm](https://github.com/ros-industrial/abb_libegm) library is used in this project.
 
 
 ## License

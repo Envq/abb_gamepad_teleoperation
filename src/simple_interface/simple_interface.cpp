@@ -55,9 +55,6 @@ EGMInterface::EGMInterface(boost::asio::io_service &io_service,
 
     // Prepare outputs message
     output_.Clear();
-
-    // Initialize attributes
-    errors_ = 0;
 }
 
 Pose EGMInterface::waitConnection(const int ms) {
@@ -66,59 +63,48 @@ Pose EGMInterface::waitConnection(const int ms) {
         if (egm_interface_ptr_->isConnected()) {
             auto status = egm_interface_ptr_->getStatus().rapid_execution_state();
             if (status == Status_RAPIDExecutionState_RAPID_UNDEFINED)
-                throw std::runtime_error(
-                    "RAPID execution state is UNDEFINED (might happen first time after "
-                    "controller start/restart. Try to restart the RAPID program");
+                std::cout << "RAPID execution state is UNDEFINED (might happen first "
+                             "time after controller start/restart. Try to restart the "
+                             "RAPID program"
+                          << std::endl;
             else if (status == Status_RAPIDExecutionState_RAPID_RUNNING)
                 break;
         }
         boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
     }
-    return waitForPose(400);
+    return waitForPose(ms);
 }
 
 Pose EGMInterface::waitForPose(const int timeout) {
     // Wait for a new EGM message from the EGM client (with a timeout in ms).
-    while (!egm_interface_ptr_->waitForMessage(timeout))
-        throw std::runtime_error("End EGM session: timeout");
-
-    // Check iusses are too many
-    if (errors_ > LIMIT_ERRORS_ * EGM_RATE_)
-        throw std::runtime_error("End EGM session: client EGM is blocked");
+    if (!egm_interface_ptr_->waitForMessage(timeout))
+        throw std::runtime_error("waitForPose() -> timeout");
 
     // Read the message received from the EGM client
     egm_interface_ptr_->read(&input_);
 
     // Get current pose
     auto &input_pose = input_.feedback().robot().cartesian().pose();
-    auto current_pose = Pose(input_pose.position().x(), input_pose.position().y(),
-                             input_pose.position().z(), input_pose.euler().x(),
-                             input_pose.euler().y(), input_pose.euler().z());
-
-    // Check errors
-    if (last_target_pose_ != current_pose)
-        errors_++;
 
     // Return a Pose with input-pose values
-    return current_pose;
+    return {input_pose.position().x(), input_pose.position().y(),
+            input_pose.position().z(), input_pose.euler().x(),
+            input_pose.euler().y(),    input_pose.euler().z()};
 }
 
 void EGMInterface::sendPose(const Pose &pose) {
     // Prepare output-pose
-    auto new_pose = output_.mutable_robot()->mutable_cartesian()->mutable_pose();
+    auto output_pose = output_.mutable_robot()->mutable_cartesian()->mutable_pose();
 
     // Initialize output-pose
-    new_pose->mutable_position()->set_x(pose.x);
-    new_pose->mutable_position()->set_y(pose.y);
-    new_pose->mutable_position()->set_z(pose.z);
-    new_pose->mutable_euler()->set_x(pose.roll);
-    new_pose->mutable_euler()->set_y(pose.pitch);
-    new_pose->mutable_euler()->set_z(pose.yaw);
+    output_pose->mutable_position()->set_x(pose.x);
+    output_pose->mutable_position()->set_y(pose.y);
+    output_pose->mutable_position()->set_z(pose.z);
+    output_pose->mutable_euler()->set_x(pose.roll);
+    output_pose->mutable_euler()->set_y(pose.pitch);
+    output_pose->mutable_euler()->set_z(pose.yaw);
 
     // Write references back to the EGM client.
     egm_interface_ptr_->write(output_);
-
-    // Update last_target_pose_
-    last_target_pose_ = pose;
 }
 }  // namespace simple_interface

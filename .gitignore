@@ -32,4 +32,5 @@ build/
 
 # Other
 .DS_STORE
-tmp.txt
+note.txt
+/src/tests.cpp
