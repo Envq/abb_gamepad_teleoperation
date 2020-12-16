@@ -41,8 +41,8 @@ bool operator!=(const Pose &pose1, const Pose &pose2) {
 // EGMInteface ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
                            boost::thread_group &thread_group, const int port,
-                           const double egm_rate)
-    : EGM_RATE_(egm_rate) {
+                           const double egm_rate, const abb_robots::Robot &robot)
+    : EGM_RATE_(egm_rate), robot_(robot) {
     egm_interface_ptr_.reset(new abb::egm::EGMControllerInterface(io_service, port));
 
     // Check successful initialization
@@ -107,4 +107,5 @@ void EGMInterface::sendPose(const Pose &pose) {
     // Write references back to the EGM client.
     egm_interface_ptr_->write(output_);
 }
+
 }  // namespace simple_interface

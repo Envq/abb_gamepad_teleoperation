@@ -43,8 +43,8 @@ int main(int argc, char **argv) {
 
     std::cout << "1: Initialize..." << std::endl;
     try {
-        simple_interface::EGMInterface egm =
-            simple_interface::EGMInterface(io_service, thread_group, PORT, EGM_RATE);
+        simple_interface::EGMInterface egm = simple_interface::EGMInterface(
+            io_service, thread_group, PORT, EGM_RATE, abb_robots::IRB_1100);
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         auto initial_pose = egm.waitConnection();

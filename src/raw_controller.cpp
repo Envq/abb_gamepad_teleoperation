@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
                 // Prepare outputs message
                 output.Clear();
                 output_pose->CopyFrom(input_pose);
-
             } else {
                 // Adjust time for manage the offset
                 time = sequence_number / ((double)EGM_RATE);  // t = seq_n * 1/f

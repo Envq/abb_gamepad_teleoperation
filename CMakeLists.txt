@@ -24,22 +24,27 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # ADD_COMPILE_OPTIONS("-Wpedantic")
 # ADD_COMPILE_OPTIONS("-Werror")
 
+SET(LIBRERIES
+    ${Boost_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
+    /workspaces/abb_libegm/build/libabb_libegm.so
+)
+SET(INCLUDES
+    ${Boost_INCLUDE_DIR}
+    ${PROTOBUF_INCLUDE_DIRS}
+    /workspaces/abb_libegm/include/
+    /workspaces/abb_libegm/build/
+    ${PROJECT_SOURCE_DIR}/include
+)
+SET(SOURCES
+    ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
+)
+
 
 
 # BUILDS #################################################################################
 # Build Examples
 IF (BUILD_EXAMPLES STREQUAL "true" OR BUILD_EXAMPLES STREQUAL "TRUE")
-    SET(LIBRERIES
-        ${Boost_LIBRARIES}
-        ${PROTOBUF_LIBRARIES}
-        /workspaces/abb_libegm/build/libabb_libegm.so
-    )
-    SET(INCLUDES
-        ${Boost_INCLUDE_DIR} 
-        ${PROTOBUF_INCLUDE_DIRS}
-        /workspaces/abb_libegm/include/
-        /workspaces/abb_libegm/build/
-    )
     SET(TYPES_NAME 
         "joint" 
         "pose"
@@ -61,23 +66,10 @@ ENDIF()
 
 
 # Build Sources
-SET(LIBRERIES
-    ${Boost_LIBRARIES}
-    /workspaces/abb_libegm/build/libabb_libegm.so
-)
-SET(INCLUDES
-    ${Boost_INCLUDE_DIR} 
-    /workspaces/abb_libegm/include/
-    /workspaces/abb_libegm/build/
-    ${PROJECT_SOURCE_DIR}/include
-)
-SET(SOURCES
-    ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
-)
 SET(FILES_NAME 
     "raw_controller" 
     "simple_controller" 
-    "keyboard_controller" 
+    "keyboard_controller"
     "tests"
 )
 FOREACH(NAME ${FILES_NAME})

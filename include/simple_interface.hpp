@@ -1,3 +1,5 @@
+#pragma once
+#include "abb_robots.hpp"
 #include <abb_libegm/egm_controller_interface.h>
 #include <iomanip>
 #include <iostream>
@@ -48,14 +50,17 @@ class EGMInterface {
     // Sample rate
     const double EGM_RATE_;
 
+    // ABB Robot informations
+    abb_robots::Robot robot_;
+
   public:
     EGMInterface(boost::asio::io_service &io_service, boost::thread_group &thread_group,
-                 const int port, const double egm_rate);
-    // Wait the start of the connection and then return current pose
+                 const int port, const double egm_rate, const abb_robots::Robot &robot);
+    // Wait the start of the connection and then return current pose.
     Pose waitConnection(const int ms = 500);
-    // Wait the current pose else throw exception
+    // Wait the current pose else throw exception.
     Pose waitForPose(const int timeout);
-    // Sent to EGM client new pose
+    // Sent to EGM client new pose.
     void sendPose(const Pose &pose);
 };
 }  // namespace simple_interface

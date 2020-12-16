@@ -1,3 +1,4 @@
+#pragma once
 #include <list>
 
 
@@ -42,7 +43,7 @@ class Robot {
 
 
 // ROBOT INSTANCES =======================================================================
-Robot IRB_1100{
+static Robot IRB_1100{
     1110,   // name.
     21.1,   // weight.
     4.0,    // handling_capacity.
