@@ -1,11 +1,19 @@
 #include <abb_libegm/egm_controller_interface.h>
 #include <iostream>
 
+
+
+// CONFIGS ===============================================================================
+const int PORT = 6510;
+const double EGM_RATE = 250.0;
+
+
+
+// MAIN ==================================================================================
 int main(int argc, char **argv) {
     std::cout << "========== Pose controller (open-loop) sample ==========" << std::endl;
 
-
-    // INITIALIZE ########################################################################
+    // INITIALIZE -----------------------------------------------------------------------
     std::cout << "1: Initialize..." << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
     boost::asio::io_service io_service;
@@ -15,7 +23,7 @@ int main(int argc, char **argv) {
     // * Sets up an EGM server (that the robot controller's EGM client can connect to).
     // * Provides APIs to the user (for setting motion references, that are sent in reply
     // to the EGM client's request).
-    abb::egm::EGMControllerInterface egm_interface(io_service, 6510);
+    abb::egm::EGMControllerInterface egm_interface(io_service, PORT);
     if (!egm_interface.isInitialized()) {
         std::cerr << "EGM interface failed to initialize (e.g. due to port already bound)"
                   << std::endl;
@@ -26,7 +34,7 @@ int main(int argc, char **argv) {
     thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
 
 
-    // CHECK CONNECTION ##################################################################
+    // CHECK CONNECTION  -----------------------------------------------------------------
     std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
     while (true) {
         using namespace abb::egm::wrapper;
@@ -45,9 +53,8 @@ int main(int argc, char **argv) {
     }
 
 
-    // JOINT CONTROLLER LOOP #############################################################
+    // JOINT CONTROLLER LOOP  ------------------------------------------------------------
     // Constants
-    const int EGM_RATE = 250;  // [Hz] (EGM communication rate, specified by EGMActJoint).
     const double POSITION_AMPLITUDE = 45.0;      // [mm].
     const double ORIENTATION_AMPLITUDE = -10.0;  // [degrees].
     const double FREQUENCY = 0.25;               // [Hz].
@@ -120,16 +127,13 @@ int main(int argc, char **argv) {
                     ->mutable_pose()
                     ->mutable_euler()
                     ->set_y(orientation_reference);
-
-                // output_pose->mutable_position()->set_x(position_reference);
-                // output_pose->mutable_euler()->set_y(orientation_reference);
             }
 
             // Write references back to the EGM client.
             egm_interface.write(output);
 
             // Print info
-            if (sequence_number % (1 * EGM_RATE) == 0)
+            if (sequence_number % (1 * (int)EGM_RATE) == 0)
                 std::cout << "[" << sequence_number << "] References: \n"
                           << "\tX position = " << input_pose.position().x() << " [mm]\n"
                           << "\tY orientation (Euler) = " << input_pose.euler().y()
@@ -141,8 +145,7 @@ int main(int argc, char **argv) {
     }
 
 
-    // SHUTDOWN
-    // ##########################################################################
+    // SHUTDOWN --------------------------------------------------------------------------
     io_service.stop();
     thread_group.join_all();
     return 0;

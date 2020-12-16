@@ -11,6 +11,7 @@ const int PORT = 6510;
 const double EGM_RATE = 250.0;
 
 
+
 // AUXILIARY FUNCTIONS ===================================================================
 namespace keyboard {
 const int X_POS = 'd';
@@ -43,8 +44,7 @@ void catcher() {
 
 
 
-// MAIN
-// ==================================================================================
+// MAIN ==================================================================================
 int main(int argc, char **argv) {
     std::cout << "========== Keyboard controller ==========" << std::endl;
     // Boost components for managing asynchronous UDP socket(s).

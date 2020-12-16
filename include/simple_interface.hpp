@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
+
+
 namespace simple_interface {
 
 class Pose {
@@ -10,9 +12,9 @@ class Pose {
     double x;
     double y;
     double z;
-    double roll;   // arround x
-    double pitch;  // arround y
-    double yaw;    // arround z
+    double roll;   // arround x.
+    double pitch;  // arround y.
+    double yaw;    // arround z.
 
     // Constructors
     Pose() : Pose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0){};
@@ -29,7 +31,6 @@ class Pose {
     friend bool operator==(const Pose &pose1, const Pose &pose2);
     friend bool operator!=(const Pose &pose1, const Pose &pose2);
 };
-
 
 
 class EGMInterface {
