@@ -52,11 +52,11 @@ Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.
 4. Open container
     - open with VSCode this repository and use "Remote-Containers:Reopen in container"
 
-5. Building inside the container
+5. Building inside the container (you can specify if you want to compile examples)
     ~~~
     mkdir -p build
     cd build
-    cmake ..
+    cmake .. -DBUILD_EXAMPLES=false
     make
     ~~~
 

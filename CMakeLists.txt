@@ -2,21 +2,22 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2)
 PROJECT(abb_egm_example)
 
 
-##################################################################
-# boost
+
+# DEPENDENCIES ###########################################################################
+# Boost
 FIND_PACKAGE(Boost REQUIRED COMPONENTS regex system thread)
 
-# google protobuffer
+# Google protobuffer
 FIND_PACKAGE(Protobuf REQUIRED)
 
-
-##################################################################
 # Require c++ standard
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
 
+
+# CONFIGS ################################################################################
 # Add warnings
 # ADD_COMPILE_OPTIONS("-Wall")
 # ADD_COMPILE_OPTIONS("-Wextra")
@@ -24,37 +25,33 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # ADD_COMPILE_OPTIONS("-Werror")
 
 
-# FILES
-SET(INCLUDES
-    ${Boost_INCLUDE_DIR} 
-    ${PROTOBUF_INCLUDE_DIRS}
-    /workspaces/abb_libegm/include/
-    /workspaces/abb_libegm/build/
-)
-SET(LIBRERIES
-    ${Boost_LIBRARIES}
-    ${PROTOBUF_LIBRARIES}
-    /workspaces/abb_libegm/build/libabb_libegm.so
-)
 
-
-
-##################################################################
-# BUILD EXAMPLES
-SET(BUILD_EXAMPLE FALSE)
-IF(BUILD_EXAMPLE)
-    SET(TYPE_FILE 
+# BUILDS #################################################################################
+# Build Examples
+IF (BUILD_EXAMPLES STREQUAL "true" OR BUILD_EXAMPLES STREQUAL "TRUE")
+    SET(LIBRERIES
+        ${Boost_LIBRARIES}
+        ${PROTOBUF_LIBRARIES}
+        /workspaces/abb_libegm/build/libabb_libegm.so
+    )
+    SET(INCLUDES
+        ${Boost_INCLUDE_DIR} 
+        ${PROTOBUF_INCLUDE_DIRS}
+        /workspaces/abb_libegm/include/
+        /workspaces/abb_libegm/build/
+    )
+    SET(TYPES_NAME 
         "joint" 
         "pose"
     )
-    SET(NAME_FILE 
+    SET(FILES_NAME 
         "controller" 
         "static_goal" 
         "trajectory" 
         "velocity_controller"
     )
-    FOREACH(TYPE ${TYPE_FILE})
-        FOREACH(NAME ${NAME_FILE})
+    FOREACH(TYPE ${TYPES_NAME})
+        FOREACH(NAME ${FILES_NAME})
             ADD_EXECUTABLE(${TYPE}_${NAME} ${PROJECT_SOURCE_DIR}/abb_examples/${TYPE}_${NAME}.cpp)
             TARGET_INCLUDE_DIRECTORIES(${TYPE}_${NAME} PRIVATE ${INCLUDES})
             TARGET_LINK_LIBRARIES(${TYPE}_${NAME} ${LIBRERIES})
@@ -63,43 +60,36 @@ IF(BUILD_EXAMPLE)
 ENDIF()
 
 
-# BUILD SOURCES
-STRING(TOLOWER "raw_controller" BIN_NAME)
-ADD_EXECUTABLE(${BIN_NAME} ${PROJECT_SOURCE_DIR}/src/${BIN_NAME}.cpp)
-TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE ${INCLUDES})
-TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
-
-STRING(TOLOWER "simple_controller" BIN_NAME)
-ADD_EXECUTABLE(${BIN_NAME} 
-    ${PROJECT_SOURCE_DIR}/src/${BIN_NAME}.cpp
-    ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
+# Build Sources
+SET(LIBRERIES
+    ${Boost_LIBRARIES}
+    /workspaces/abb_libegm/build/libabb_libegm.so
 )
-TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE 
-    ${INCLUDES}
+SET(INCLUDES
+    ${Boost_INCLUDE_DIR} 
+    /workspaces/abb_libegm/include/
+    /workspaces/abb_libegm/build/
     ${PROJECT_SOURCE_DIR}/include
 )
-TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
-
-STRING(TOLOWER "keyboard_controller" BIN_NAME)
-ADD_EXECUTABLE(${BIN_NAME} 
-    ${PROJECT_SOURCE_DIR}/src/${BIN_NAME}.cpp
+SET(SOURCES
     ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
 )
-TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE 
-    ${INCLUDES}
-    ${PROJECT_SOURCE_DIR}/include
+SET(FILES_NAME 
+    "raw_controller" 
+    "simple_controller" 
+    "keyboard_controller" 
+    "tests"
 )
-TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
-
-STRING(TOLOWER "tests" BIN_NAME)
-ADD_EXECUTABLE(${BIN_NAME} ${PROJECT_SOURCE_DIR}/src/${BIN_NAME}.cpp)
-TARGET_INCLUDE_DIRECTORIES(${BIN_NAME} PRIVATE ${INCLUDES})
-TARGET_LINK_LIBRARIES(${BIN_NAME} ${LIBRERIES})
-
+FOREACH(NAME ${FILES_NAME})
+    ADD_EXECUTABLE(${NAME} ${SOURCES} ${PROJECT_SOURCE_DIR}/src/${NAME}.cpp)
+    TARGET_INCLUDE_DIRECTORIES(${NAME} PRIVATE ${INCLUDES})
+    TARGET_LINK_LIBRARIES(${NAME} ${LIBRERIES})
+ENDFOREACH()
 
 
-##################################################################
-# CLEAN COMMAND
+
+# COMMANDS ###############################################################################
+# Clean
 ADD_CUSTOM_TARGET(rm
     COMMAND rm -rf ${PROJECT_SOURCE_DIR}/build/*
     COMMENT "Clean build directory"
