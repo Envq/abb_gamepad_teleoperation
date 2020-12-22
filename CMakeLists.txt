@@ -70,7 +70,8 @@ SET(FILES_NAME
     "raw_controller" 
     "simple_controller" 
     "keyboard_controller"
-    "tests"
+    "test_controller"
+    "my_test"
 )
 FOREACH(NAME ${FILES_NAME})
     ADD_EXECUTABLE(${NAME} ${SOURCES} ${PROJECT_SOURCE_DIR}/src/${NAME}.cpp)

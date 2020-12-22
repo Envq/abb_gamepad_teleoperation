@@ -1,6 +1,5 @@
 #include "simple_interface.hpp"
 #include <iostream>
-#include <stdexcept>
 
 
 
@@ -36,12 +35,12 @@ Pose perform_pose(Pose &initial_pose, const int time) {
 // MAIN ==================================================================================
 int main(int argc, char **argv) {
     std::cout << "========== Simple Controller ==========" << std::endl;
+
+    std::cout << "1: Initialize..." << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
     boost::asio::io_service io_service;
     boost::thread_group thread_group;
 
-
-    std::cout << "1: Initialize..." << std::endl;
     try {
         simple_interface::EGMInterface egm = simple_interface::EGMInterface(
             io_service, thread_group, PORT, EGM_RATE, abb_robots::IRB_1100);
@@ -66,15 +65,15 @@ int main(int argc, char **argv) {
                 // Send new pose
                 egm.sendPose(target_pose);
 
-            } catch (std::runtime_error &err) {  // catch timeout
-                std::cerr << err.what() << std::endl;
+            } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
+                std::cerr << warn.getInfo() << std::endl;
                 // Initialize interpolation
                 counter = 0;
             }
         }
 
-    } catch (std::runtime_error &err) {
-        std::cout << err.what() << std::endl;
+    } catch (simple_interface::EGMErrorException &err) {
+        std::cout << err.getInfo() << std::endl;
     }
 
     // Clean Shutdown

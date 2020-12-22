@@ -1,6 +1,5 @@
 #include "simple_interface.hpp"
 #include <iostream>
-#include <stdexcept>
 #include <termios.h>
 #include <unistd.h>
 
@@ -89,8 +88,8 @@ int main(int argc, char **argv) {
             egm.sendPose(pose);
         }
 
-    } catch (std::runtime_error &err) {  // catch timeout and port error
-        std::cerr << "\t" << err.what() << std::endl;
+    } catch (simple_interface::EGMException &err) {  // catch timeout and port error
+        std::cerr << "\t" << err.getInfo() << std::endl;
         thread_group.remove_thread(keyboard_catcher);
     }
 

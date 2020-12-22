@@ -1,9 +1,8 @@
 #pragma once
 #include "abb_robots.hpp"
+#include "custom_exceptions.hpp"
 #include <abb_libegm/egm_controller_interface.h>
-#include <iomanip>
 #include <iostream>
-#include <stdexcept>
 
 
 
@@ -51,7 +50,7 @@ class EGMInterface {
     const double EGM_RATE_;
 
     // ABB Robot informations
-    abb_robots::Robot robot_;
+    const abb_robots::Robot robot_;
 
   public:
     EGMInterface(boost::asio::io_service &io_service, boost::thread_group &thread_group,

@@ -33,4 +33,4 @@ build/
 # Other
 .DS_STORE
 note.txt
-/src/tests.cpp
+/src/my_test.cpp

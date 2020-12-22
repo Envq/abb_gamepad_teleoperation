@@ -9,7 +9,7 @@ std::ostream &operator<<(std::ostream &stream, const Pose &pose) {
     stream << "- Position:\t";
     stream << "x: " << pose.x;
     stream << "\ty: " << pose.y;
-    stream << "\tz: " << pose.z << std::endl;
+    stream << "\t\tz: " << pose.z << std::endl;
     stream << "- Orientation:\t";
     stream << "roll: " << pose.roll;
     stream << "\tpitch: " << pose.pitch;
@@ -47,8 +47,9 @@ EGMInterface::EGMInterface(boost::asio::io_service &io_service,
 
     // Check successful initialization
     if (!egm_interface_ptr_->isInitialized())
-        throw std::runtime_error(
+        throw simple_interface::EGMErrorException(
             "EGM interface failed to initialize (e.g. due to port already bound)");
+
 
     // Spin up a thread to run the io_service.
     thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
@@ -78,7 +79,7 @@ Pose EGMInterface::waitConnection(const int ms) {
 Pose EGMInterface::waitForPose(const int timeout) {
     // Wait for a new EGM message from the EGM client (with a timeout in ms).
     if (!egm_interface_ptr_->waitForMessage(timeout))
-        throw std::runtime_error("waitForPose() -> timeout");
+        throw simple_interface::EGMWarnException("WaitForPose: Timeout");
 
     // Read the message received from the EGM client
     egm_interface_ptr_->read(&input_);
