@@ -67,9 +67,9 @@ ENDIF()
 
 # Build Sources
 SET(FILES_NAME 
-    "raw_controller" 
-    "simple_controller" 
-    "keyboard_controller"
+    # "raw_controller" 
+    # "simple_controller" 
+    # "keyboard_controller"
     "test_controller"
     "my_test"
 )

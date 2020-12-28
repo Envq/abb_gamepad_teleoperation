@@ -3,6 +3,7 @@
 #include "custom_exceptions.hpp"
 #include <abb_libegm/egm_controller_interface.h>
 #include <iostream>
+#include <math.h>
 
 
 
@@ -33,6 +34,25 @@ class Pose {
     friend bool operator!=(const Pose &pose1, const Pose &pose2);
 };
 
+class Workspace {
+  private:
+    int type_;  // 1 for cube; 2 for cylinder
+    // the origin is in the center
+    int x_;
+    int y_;
+    int z_;
+    int height_;
+    int radius_;
+    Pose origin_;
+
+  public:
+    void initParallelepiped(const Pose &origin, const int x, const int y, const int z);
+    void initCube(const Pose &origin, const int size);
+    void initCylinder(const Pose &origin, const int radius, const int height);
+
+    bool inside(const Pose &pose, const double delta);
+};
+
 
 class EGMInterface {
   private:
@@ -52,6 +72,10 @@ class EGMInterface {
     // ABB Robot informations
     const abb_robots::Robot robot_;
 
+    // Workspace
+    Workspace workspace_;
+
+
   public:
     EGMInterface(boost::asio::io_service &io_service, boost::thread_group &thread_group,
                  const int port, const double egm_rate, const abb_robots::Robot &robot);
@@ -61,5 +85,14 @@ class EGMInterface {
     Pose waitForPose(const int timeout);
     // Sent to EGM client new pose.
     void sendPose(const Pose &pose);
+    // Set the workspace (size in mm)
+    void setCylinderWorkspace(const Pose &origin, const int radius, const int height);
+    void setCubeWorkspace(const Pose &origin, const int size);
+    void setParallelepipedWorkspace(const Pose &origin, const int x, const int y,
+                                    const int z);
+    // Check if this pose violates the constraints of the workspace
+    bool workspaceViolation(const Pose &pose, const double delta = 1.0);
+    // Check if this pose is equal to the current pose of th robot
+    bool robotIn(const Pose &pose, const double delta);
 };
 }  // namespace simple_interface

@@ -38,6 +38,55 @@ bool operator!=(const Pose &pose1, const Pose &pose2) {
 }
 
 
+// WORKSPACE =============================================================================
+void Workspace::initParallelepiped(const Pose &origin, const int x, const int y,
+                                   const int z) {
+    type_ = 1;
+    origin_ = origin;
+    x_ = x;
+    y_ = y;
+    z_ = z;
+}
+
+void Workspace::initCube(const Pose &origin, const int size) {
+    initParallelepiped(origin, size, size, size);
+}
+
+void Workspace::initCylinder(const Pose &origin, const int radius, const int height) {
+    type_ = 2;
+    origin_ = origin;
+    radius_ = radius;
+    height_ = height;
+}
+
+bool Workspace::inside(const Pose &pose, const double delta) {
+    if (type_ == 1) {
+        if (pose.x < (origin_.x - x_ - delta) || pose.x > (origin_.x + x_ + delta)) {
+            std::cout << "WS(X)" << std::endl;
+            return false;
+        }
+        if (pose.y < (origin_.y - y_ - delta) || pose.y > (origin_.y + y_ + delta)) {
+            std::cout << "WS(Y)" << std::endl;
+            return false;
+        }
+        if (pose.z < (origin_.z - z_ - delta) || pose.z > (origin_.z + z_ + delta)) {
+            std::cout << "WS(Z)" << std::endl;
+            return false;
+        }
+        return true;
+
+    } else if (type_ == 2) {
+        if (pose.z < (origin_.z - height_ / 2.0 - delta) ||
+            pose.z > (origin_.z + height_ / 2.0 + delta))
+            return false;
+        if (sqrt(pow(pose.x - origin_.x, 2) + pow(pose.y - origin_.y, 2)) <
+            (radius_ + delta))
+            return true;
+        return false;
+    }
+}
+
+
 // EGMInteface ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
                            boost::thread_group &thread_group, const int port,
@@ -108,5 +157,40 @@ void EGMInterface::sendPose(const Pose &pose) {
     // Write references back to the EGM client.
     egm_interface_ptr_->write(output_);
 }
+
+void EGMInterface::setCylinderWorkspace(const Pose &origin, const int radius,
+                                        const int height) {
+    workspace_.initCylinder(origin, radius, height);
+}
+
+void EGMInterface::setCubeWorkspace(const Pose &origin, const int size) {
+    workspace_.initCube(origin, size);
+}
+void EGMInterface::setParallelepipedWorkspace(const Pose &origin, const int x,
+                                              const int y, const int z) {
+    workspace_.initParallelepiped(origin, x, y, z);
+}
+
+bool EGMInterface::workspaceViolation(const Pose &pose, const double delta) {
+    return !workspace_.inside(pose, delta);
+}
+
+bool EGMInterface::robotIn(const Pose &pose, const double delta) {
+    auto robot = waitForPose(400);
+    if (robot.x < (pose.x - delta) && robot.x > (pose.x + delta))
+        return false;
+    if (robot.y < (pose.y - delta) && robot.y > (pose.y + delta))
+        return false;
+    if (robot.z < (pose.z - delta) && robot.z > (pose.z + delta))
+        return false;
+    if (robot.roll < (pose.roll - delta) && robot.roll > (pose.roll + delta))
+        return false;
+    if (robot.pitch < (pose.pitch - delta) && robot.pitch > (pose.pitch + delta))
+        return false;
+    if (robot.yaw < (pose.yaw - delta) && robot.yaw > (pose.yaw + delta))
+        return false;
+    return true;
+}
+
 
 }  // namespace simple_interface
