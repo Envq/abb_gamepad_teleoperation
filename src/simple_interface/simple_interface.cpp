@@ -39,55 +39,33 @@ bool operator!=(const Pose &pose1, const Pose &pose2) {
 
 
 // WORKSPACE =============================================================================
-void Workspace::initParallelepiped(const Pose &origin, const int x, const int y,
-                                   const int z) {
-    type_ = 1;
+void Workspace::init(const Pose &origin, const int x, const int y, const int z) {
     origin_ = origin;
     x_ = x;
     y_ = y;
     z_ = z;
 }
 
-void Workspace::initCube(const Pose &origin, const int size) {
-    initParallelepiped(origin, size, size, size);
+void Workspace::init(const Pose &origin, const int size) {
+    init(origin, size, size, size);
 }
 
-void Workspace::initCylinder(const Pose &origin, const int radius, const int height) {
-    type_ = 2;
-    origin_ = origin;
-    radius_ = radius;
-    height_ = height;
+bool Workspace::insideX(const Pose &pose, const double delta) {
+    return (pose.x >= (origin_.x - x_ - delta) && pose.x <= (origin_.x + x_ + delta));
 }
 
-bool Workspace::inside(const Pose &pose, const double delta) {
-    if (type_ == 1) {
-        if (pose.x < (origin_.x - x_ - delta) || pose.x > (origin_.x + x_ + delta)) {
-            std::cout << "WS(X)" << std::endl;
-            return false;
-        }
-        if (pose.y < (origin_.y - y_ - delta) || pose.y > (origin_.y + y_ + delta)) {
-            std::cout << "WS(Y)" << std::endl;
-            return false;
-        }
-        if (pose.z < (origin_.z - z_ - delta) || pose.z > (origin_.z + z_ + delta)) {
-            std::cout << "WS(Z)" << std::endl;
-            return false;
-        }
-        return true;
+bool Workspace::insideY(const Pose &pose, const double delta) {
+    return (pose.y >= (origin_.y - y_ - delta) && pose.y <= (origin_.y + y_ + delta));
+}
 
-    } else if (type_ == 2) {
-        if (pose.z < (origin_.z - height_ / 2.0 - delta) ||
-            pose.z > (origin_.z + height_ / 2.0 + delta))
-            return false;
-        if (sqrt(pow(pose.x - origin_.x, 2) + pow(pose.y - origin_.y, 2)) <
-            (radius_ + delta))
-            return true;
-        return false;
-    }
+bool Workspace::insideZ(const Pose &pose, const double delta) {
+    return (pose.z >= (origin_.z - z_ - delta) && pose.z <= (origin_.z + z_ + delta));
 }
 
 
-// EGMInteface ===========================================================================
+
+// EGMInteface
+// ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
                            boost::thread_group &thread_group, const int port,
                            const double egm_rate, const abb_robots::Robot &robot)
@@ -97,7 +75,8 @@ EGMInterface::EGMInterface(boost::asio::io_service &io_service,
     // Check successful initialization
     if (!egm_interface_ptr_->isInitialized())
         throw simple_interface::EGMErrorException(
-            "EGM interface failed to initialize (e.g. due to port already bound)");
+            "EGM interface failed to initialize (e.g. due to port already "
+            "bound)");
 
 
     // Spin up a thread to run the io_service.
@@ -158,39 +137,32 @@ void EGMInterface::sendPose(const Pose &pose) {
     egm_interface_ptr_->write(output_);
 }
 
-void EGMInterface::setCylinderWorkspace(const Pose &origin, const int radius,
-                                        const int height) {
-    workspace_.initCylinder(origin, radius, height);
+void EGMInterface::setWorkspace(const Pose &origin, const int x, const int y,
+                                const int z) {
+    workspace_.init(origin, x, y, z);
 }
 
-void EGMInterface::setCubeWorkspace(const Pose &origin, const int size) {
-    workspace_.initCube(origin, size);
-}
-void EGMInterface::setParallelepipedWorkspace(const Pose &origin, const int x,
-                                              const int y, const int z) {
-    workspace_.initParallelepiped(origin, x, y, z);
+void EGMInterface::setWorkspace(const Pose &origin, const int size) {
+    workspace_.init(origin, size);
 }
 
-bool EGMInterface::workspaceViolation(const Pose &pose, const double delta) {
-    return !workspace_.inside(pose, delta);
+bool EGMInterface::workspaceViolations(const Pose &pose, const double delta) {
+    return !workspace_.insideX(pose, delta) || !workspace_.insideY(pose, delta) ||
+           !workspace_.insideZ(pose, delta);
 }
 
-bool EGMInterface::robotIn(const Pose &pose, const double delta) {
-    auto robot = waitForPose(400);
-    if (robot.x < (pose.x - delta) && robot.x > (pose.x + delta))
-        return false;
-    if (robot.y < (pose.y - delta) && robot.y > (pose.y + delta))
-        return false;
-    if (robot.z < (pose.z - delta) && robot.z > (pose.z + delta))
-        return false;
-    if (robot.roll < (pose.roll - delta) && robot.roll > (pose.roll + delta))
-        return false;
-    if (robot.pitch < (pose.pitch - delta) && robot.pitch > (pose.pitch + delta))
-        return false;
-    if (robot.yaw < (pose.yaw - delta) && robot.yaw > (pose.yaw + delta))
-        return false;
-    return true;
+bool EGMInterface::workspaceViolationX(const Pose &pose, const double delta) {
+    return !workspace_.insideX(pose, delta);
 }
+
+bool EGMInterface::workspaceViolationY(const Pose &pose, const double delta) {
+    return !workspace_.insideY(pose, delta);
+}
+
+bool EGMInterface::workspaceViolationZ(const Pose &pose, const double delta) {
+    return !workspace_.insideZ(pose, delta);
+}
+
 
 
 }  // namespace simple_interface

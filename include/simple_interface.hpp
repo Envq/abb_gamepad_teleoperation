@@ -36,21 +36,19 @@ class Pose {
 
 class Workspace {
   private:
-    int type_;  // 1 for cube; 2 for cylinder
     // the origin is in the center
     int x_;
     int y_;
     int z_;
-    int height_;
-    int radius_;
     Pose origin_;
 
   public:
-    void initParallelepiped(const Pose &origin, const int x, const int y, const int z);
-    void initCube(const Pose &origin, const int size);
-    void initCylinder(const Pose &origin, const int radius, const int height);
+    void init(const Pose &origin, const int x, const int y, const int z);
+    void init(const Pose &origin, const int size);
 
-    bool inside(const Pose &pose, const double delta);
+    bool insideX(const Pose &pose, const double delta);
+    bool insideY(const Pose &pose, const double delta);
+    bool insideZ(const Pose &pose, const double delta);
 };
 
 
@@ -86,13 +84,12 @@ class EGMInterface {
     // Sent to EGM client new pose.
     void sendPose(const Pose &pose);
     // Set the workspace (size in mm)
-    void setCylinderWorkspace(const Pose &origin, const int radius, const int height);
-    void setCubeWorkspace(const Pose &origin, const int size);
-    void setParallelepipedWorkspace(const Pose &origin, const int x, const int y,
-                                    const int z);
+    void setWorkspace(const Pose &origin, const int x, const int y, const int z);
+    void setWorkspace(const Pose &origin, const int size);
     // Check if this pose violates the constraints of the workspace
-    bool workspaceViolation(const Pose &pose, const double delta = 1.0);
-    // Check if this pose is equal to the current pose of th robot
-    bool robotIn(const Pose &pose, const double delta);
+    bool workspaceViolations(const Pose &pose, const double delta = 0.0);
+    bool workspaceViolationX(const Pose &pose, const double delta = 0.0);
+    bool workspaceViolationY(const Pose &pose, const double delta = 0.0);
+    bool workspaceViolationZ(const Pose &pose, const double delta = 0.0);
 };
 }  // namespace simple_interface

@@ -9,10 +9,14 @@
 // CONFIGS ===============================================================================
 const int PORT = 6510;
 const double EGM_RATE = 250.0;
-const bool TEST_REPLANNING = false;
-const bool TEST_FEEDBACK = false;
-const bool TEST_CONVERGENCE = false;
-const bool TEST_WORKSPACE = true;
+/*
+1 -> REPLANNING
+2 -> FEEDBACK with one send
+3 -> FEEDBACK with more send
+4 -> CONVERGENCE
+5 -> WORKSPACE
+*/
+int TEST_TYPE = 0;
 
 
 
@@ -40,7 +44,7 @@ void delay(const double seconds) {
 
 // MAIN
 // ==================================================================================
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
     std::cout << "========== Test Controller ==========" << std::endl;
 
     std::cout << "1: Initialize..." << std::endl;
@@ -48,6 +52,16 @@ int main(int argc, char **argv) {
     boost::thread_group thread_group;
     boost::thread *egm_logger;
     boost::shared_ptr<simple_interface::EGMInterface> egm_ptr;
+    if (argc > 1) {
+        try {
+            TEST_TYPE = std::stoi(argv[1]);
+        } catch (std::invalid_argument &err) {
+            std::cout << "INVALID ARGUMENT -> abort" << std::endl;
+            io_service.stop();
+            thread_group.join_all();
+            return 0;
+        }
+    }
 
 
     try {
@@ -65,10 +79,16 @@ int main(int argc, char **argv) {
         std::cout << initial_pose << std::endl;
 
 
-        std::cout << "3: Test replanning" << std::endl;
-        if (TEST_REPLANNING) {
-            const int TIMEOUT = 400;
-            auto target = initial_pose;
+        std::cout << "3: Test ";
+        const int TIMEOUT = 400;
+        auto target = initial_pose;
+        double offset = 0.0;
+        double violation = 0.0;
+
+        switch (TEST_TYPE) {
+        case 1:
+            // Check if there is replanning
+            std::cout << "Replanning" << std::endl;
             std::cout << "Perform target1" << std::endl;
             target.x += 100;
             egm_ptr->sendPose(target);
@@ -96,13 +116,11 @@ int main(int argc, char **argv) {
             egm_ptr->sendPose(target);
             delay(4.0);
             std::cout << target << std::endl;
-        }
+            break;
 
-
-        std::cout << "4: Test feedback" << std::endl;
-        if (TEST_FEEDBACK) {
-            const int TIMEOUT = 400;
-            auto target = initial_pose;
+        case 2:
+            // Check if robot pose and feedback pose match
+            std::cout << "Feedback1" << std::endl;
             target.x += 100;
             egm_ptr->sendPose(target);
             while (true) {
@@ -110,15 +128,30 @@ int main(int argc, char **argv) {
                     std::cout << egm_ptr->waitForPose(TIMEOUT) << std::endl;
                 } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                     std::cerr << warn.getInfo() << std::endl;
+                    break;
                 }
             }
-        }
+            break;
 
+        case 3:
+            // Check if robot pose and feedback pose match
+            std::cout << "Feedback2" << std::endl;
+            while (true) {
+                try {
+                    auto pose = egm_ptr->waitForPose(TIMEOUT);
+                    std::cout << pose << std::endl;
+                    pose.x += 1;
+                    egm_ptr->sendPose(pose);
+                } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
+                    std::cerr << warn.getInfo() << std::endl;
+                    break;
+                }
+            }
+            break;
 
-        std::cout << "5: Test Convergence Criteria" << std::endl;
-        if (TEST_CONVERGENCE) {
-            const int TIMEOUT = 400;
-            auto target = initial_pose;
+        case 4:
+            // Check if EGMRUNPOSE exit after convergence
+            std::cout << "Convergence Criteria" << std::endl;
             target.x += 100;
             egm_ptr->sendPose(target);
             while (true) {
@@ -129,17 +162,12 @@ int main(int argc, char **argv) {
                     break;
                 }
             }
-        }
+            break;
 
-
-        std::cout << "6: Test workspace" << std::endl;
-        if (TEST_WORKSPACE) {
-            const int TIMEOUT = 400;
-            double offset = 0.0;
-            double violation = 0.0;
-            auto target = initial_pose;
+        case 5:
+            std::cout << "Workspace" << std::endl;
             std::cout << "Set workspace" << std::endl;
-            egm_ptr->setCubeWorkspace(initial_pose, 50);
+            egm_ptr->setWorkspace(initial_pose, 50);
 
             // std::cout << "Go to point0" << std::endl;
             // while (true) {
@@ -166,14 +194,15 @@ int main(int argc, char **argv) {
                 target.y -= offset;
                 target.x -= offset;
                 target.z -= offset;
-                if (egm_ptr->workspaceViolation(target, violation)) {
+                if (egm_ptr->workspaceViolations(target, violation)) {
+                    std::cout << "Violation" << std::endl;
                     if (offset == 1.0)
                         break;
                     target.y += offset;  // rollback
                     target.x += offset;
                     target.z += offset;
                     offset = 1.0;
-                    violation = 5.0;
+                    violation = 0.0;
                 }
                 egm_ptr->sendPose(target);
             }
@@ -183,16 +212,16 @@ int main(int argc, char **argv) {
             std::cout << "Go to point1" << std::endl;
             offset = 10.0;
             violation = 0.0;
-            std::cout << offset << std::endl;
             while (true) {
                 target = egm_ptr->waitForPose(TIMEOUT);
                 target.x += offset;
-                if (egm_ptr->workspaceViolation(target, violation)) {
+                if (egm_ptr->workspaceViolationX(target, violation)) {
+                    std::cout << "Violation" << std::endl;
                     if (offset == 1.0)
                         break;
                     target.x -= offset;  // rollback
                     offset = 1.0;
-                    violation = 5.0;
+                    violation = 0.0;
                 }
                 egm_ptr->sendPose(target);
             }
@@ -206,12 +235,13 @@ int main(int argc, char **argv) {
             while (true) {
                 target = egm_ptr->waitForPose(TIMEOUT);
                 target.y += offset;
-                if (egm_ptr->workspaceViolation(target, violation)) {
+                if (egm_ptr->workspaceViolationY(target, violation)) {
+                    std::cout << "Violation" << std::endl;
                     if (offset == 1.0)
                         break;
                     target.y -= offset;  // rollback
                     offset = 1.0;
-                    violation = 5.0;
+                    violation = 0.0;
                 }
                 egm_ptr->sendPose(target);
             }
@@ -224,12 +254,13 @@ int main(int argc, char **argv) {
             while (true) {
                 target = egm_ptr->waitForPose(TIMEOUT);
                 target.x -= offset;
-                if (egm_ptr->workspaceViolation(target, violation)) {
+                if (egm_ptr->workspaceViolationX(target, violation)) {
+                    std::cout << "Violation" << std::endl;
                     if (offset == 1.0)
                         break;
                     target.x += offset;  // rollback
                     offset = 1.0;
-                    violation = 5.0;
+                    violation = 0.0;
                 }
                 egm_ptr->sendPose(target);
             }
@@ -242,17 +273,25 @@ int main(int argc, char **argv) {
             while (true) {
                 target = egm_ptr->waitForPose(TIMEOUT);
                 target.y -= offset;
-                if (egm_ptr->workspaceViolation(target, violation)) {
+                if (egm_ptr->workspaceViolationY(target, violation)) {
+                    std::cout << "Violation" << std::endl;
                     if (offset == 1.0)
                         break;
                     target.y += offset;  // rollback
                     offset = 1.0;
-                    violation = 5.0;
+                    violation = 0.0;
                 }
                 egm_ptr->sendPose(target);
             }
             std::cout << egm_ptr->waitForPose(400) << std::endl;
+            break;
+
+        default:
+            std::cout << "Not selected" << std::endl;
+            break;
         }
+
+
     } catch (simple_interface::EGMErrorException &err) {
         std::cout << err.getInfo() << std::endl;
         thread_group.remove_thread(egm_logger);
