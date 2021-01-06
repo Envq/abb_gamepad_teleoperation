@@ -37,7 +37,8 @@ SET(INCLUDES
     ${PROJECT_SOURCE_DIR}/include
 )
 SET(SOURCES
-    ${PROJECT_SOURCE_DIR}/src/simple_interface/simple_interface.cpp
+    ${PROJECT_SOURCE_DIR}/src/auxiliary_interfaces/simple_interface.cpp
+    ${PROJECT_SOURCE_DIR}/src/auxiliary_interfaces/joystick_interface.cpp
 )
 
 
@@ -70,8 +71,8 @@ SET(FILES_NAME
     # "raw_controller" 
     # "simple_controller" 
     # "keyboard_controller"
-    "test_controller"
-    "my_test"
+    # "test_controller"
+    "joystick_controller"
 )
 FOREACH(NAME ${FILES_NAME})
     ADD_EXECUTABLE(${NAME} ${SOURCES} ${PROJECT_SOURCE_DIR}/src/${NAME}.cpp)

@@ -1,34 +1,13 @@
+#include "joystick_interface.hpp"
 #include "simple_interface.hpp"
 #include <iostream>
 
 
 
 // CONFIGS ===============================================================================
-const int PORT = 6510;
+const int EGM_PORT = 6510;
+const int JOY_PORT = 6511;
 const double EGM_RATE = 250.0;
-
-
-
-// AUXILIARY FUNCTION ===================================================================
-namespace interpolation {
-const double POSITION_AMPLITUDE = 45.0;      // [mm].
-const double ORIENTATION_AMPLITUDE = -10.0;  // [degrees].
-const double FREQUENCY = 0.25;               // [Hz].
-
-using namespace simple_interface;
-Pose perform_pose(Pose &initial_pose, const int time) {
-    return {initial_pose.x +
-                POSITION_AMPLITUDE *
-                    (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI)),
-            initial_pose.y,
-            initial_pose.z,
-            initial_pose.roll,
-            initial_pose.pitch +
-                ORIENTATION_AMPLITUDE *
-                    (1.0 + std::sin(2.0 * M_PI * FREQUENCY * time - 0.5 * M_PI)),
-            initial_pose.yaw};
-}
-}  // namespace interpolation
 
 
 
@@ -36,15 +15,20 @@ Pose perform_pose(Pose &initial_pose, const int time) {
 int main(int argc, char **argv) {
     std::cout << "========== Simple Controller ==========" << std::endl;
 
+
     std::cout << "1: Initialize..." << std::endl;
     // Boost components for managing asynchronous UDP socket(s).
     boost::asio::io_service io_service;
     boost::thread_group thread_group;
     boost::shared_ptr<simple_interface::EGMInterface> egm_ptr;
+    boost::shared_ptr<joystick_interface::JoystickInterface> joy_ptr;
 
     try {
-        egm_ptr.reset(new simple_interface::EGMInterface(io_service, thread_group, PORT,
-                                                         EGM_RATE, abb_robots::IRB_1100));
+        egm_ptr.reset(new simple_interface::EGMInterface(
+            io_service, thread_group, EGM_PORT, EGM_RATE, abb_robots::IRB_1100));
+
+        joy_ptr.reset(new joystick_interface::JoystickInterface(io_service, thread_group,
+                                                                JOY_PORT));
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         auto initial_pose = egm_ptr->waitConnection();
@@ -60,11 +44,31 @@ int main(int argc, char **argv) {
                 std::cout << pose << std::endl;
 
                 // Perform and update current target pose
-                auto target_pose = interpolation::perform_pose(
-                    initial_pose, counter++ / ((double)EGM_RATE));
+                auto target = initial_pose;
+                auto joy_info = joy_ptr->read();
+
+                if (joy_info.quit)
+                    break;
+
+                switch (joy_info.axis) {
+                case 0:
+                    target.x += joy_info.value;
+                    break;
+
+                case 1:
+                    target.y += joy_info.value;
+                    break;
+
+                case 3:
+                    target.z += joy_info.value;
+                    break;
+
+                default:
+                    break;
+                }
 
                 // Send new pose
-                egm_ptr->sendPose(target_pose);
+                egm_ptr->sendPose(target);
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;

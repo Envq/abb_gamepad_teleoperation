@@ -64,8 +64,7 @@ bool Workspace::insideZ(const Pose &pose, const double delta) {
 
 
 
-// EGMInteface
-// ===========================================================================
+// EGMInteface ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
                            boost::thread_group &thread_group, const int port,
                            const double egm_rate, const abb_robots::Robot &robot)

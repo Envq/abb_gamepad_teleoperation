@@ -24,7 +24,7 @@ int TEST_TYPE = 0;
 void logger(const boost::shared_ptr<simple_interface::EGMInterface> &EGM,
             const int TIMEOUT) {
     while (true) {
-        try {
+       try {
             // Get current pose
             auto pose = EGM->waitForPose(500);
             std::cout << pose << std::endl;
