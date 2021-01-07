@@ -1,26 +1,35 @@
-# ABB EGM EXAMPLES
+# **ABB EGM EXAMPLES**
 This repository use [abb_libegm](https://github.com/ros-industrial/abb_libegm) without [ROS](https://www.ros.org) for interact with RobostStudio.
 
-
-## Table of Contents
+---
+## **Table of Contents**
 
 * [Getting started](#getting-started)
   * [Dependencies](#dependencies)
   * [Building from source](#building-from-source)
+* [Examples](#examples)
+    * [abb_examples/](#abb_examples)
+    * [raw_controller](#raw_controller)
+    * [simple_controller](#simple_controller)
+    * [test_controller](#test_controller)
+    * [joystick_controller](#joystick_controller)
 * [VSCode](#vscode)
 * [Author](#author)
 * [License](#license)
 
 
 ---
-## Getting Started
+## **Getting Started**
 This project is running in a Docker container and and I use the VSCode Remote-containers extension to develop within it.
 
 
-## Dependencies
+---
+## **Dependencies**
 Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.com) with [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
 
-## Setup and building
+
+---
+## **Setup and building**
 1. Create Project 
     - Create "Solution with Station and Virtual Controller"
         - use: IRB_1100_4kg_0.47m
@@ -61,9 +70,46 @@ Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.
     ~~~
 
 
+---
+## **Examples**
+All examples are launchable inside docker apart from joystick_controller. 
+
+A class (simple_interface) that wraps around abb_libegm has been created that simplifies its use, added exceptions (custom_exception) and a class (joystick_interface) to be launched on the host to read the joystick values using [SDL2](https://www.libsdl.org/download-2.0.php).
+
+
+### **abb_examples/**
+These are the examples found [here](https://github.com/ros-industrial/abb_libegm/issues/18) cleaned up by ROS
+
+Use this for compile also abb_examples
+~~~
+cmake .. -DBUILD_EXAMPLES=true
+~~~
+
+
+### **raw_controller**
+This is my refactor of abb_examples/pose_controller.cpp
+
+### **simple_controller**
+This example is identical to raw_controller but implemented with simple_interface
+
+### **test_controller**
+This example runs some tests that can be called up with the relative number per argument:
+~~~
+1 -> REPLANNING
+2 -> FEEDBACK with one send
+3 -> FEEDBACK with more send
+4 -> CONVERGENCE
+5 -> WORKSPACE
+~~~
+
+
+### **joystick_controller**
+This example performs teleoperation using a joystick (tested with logitech f310).
+Since on macos and windows I can't access the joystick from inside the docker container, joystick_interface and consequently joystick_controller are only executable from the host. Additional installation of [SDL2](https://www.libsdl.org/download-2.0.php) is required
+
 
 ---
-## VSCode
+## **VSCode**
 I used these extensions:
 - **c/c++** by microsoft
 - **c/c++ snippets** by harsh
@@ -79,11 +125,11 @@ I used these extensions:
 
 
 ---
-## Author
+## **Author**
 **Enrico Sgarbanti** [@**Envq**](https://github.com/Envq).
 
 Note: the [abb_libegm](https://github.com/ros-industrial/abb_libegm) library is used in this project.
 
 
-## License
+## **License**
 This project is licensed under the GPL v3 License - see the [LICENSE.md](LICENSE.md) file for details

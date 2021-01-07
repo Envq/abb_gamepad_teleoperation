@@ -60,11 +60,11 @@ int main(int argc, char **argv) {
                 std::cout << pose << std::endl;
 
                 // Perform and update current target pose
-                auto target_pose = interpolation::perform_pose(
-                    initial_pose, counter++ / ((double)EGM_RATE));
+                auto target = interpolation::perform_pose(initial_pose,
+                                                          counter++ / ((double)EGM_RATE));
 
                 // Send new pose
-                egm_ptr->sendPose(target_pose);
+                egm_ptr->sendPose(target);
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;

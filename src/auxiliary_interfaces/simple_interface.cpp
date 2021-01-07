@@ -73,16 +73,21 @@ EGMInterface::EGMInterface(boost::asio::io_service &io_service,
 
     // Check successful initialization
     if (!egm_interface_ptr_->isInitialized())
-        throw simple_interface::EGMErrorException(
+        throw EGMErrorException(
             "EGM interface failed to initialize (e.g. due to port already "
             "bound)");
 
-
     // Spin up a thread to run the io_service.
     thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+    // egm_thread_ =
+    //     new boost::thread(boost::bind(&boost::asio::io_service::run, &io_service));
 
     // Prepare outputs message
     output_.Clear();
+}
+
+EGMInterface::~EGMInterface() {
+    // std::cout << "DELETE EGM INTERFACE" << std::endl;
 }
 
 Pose EGMInterface::waitConnection(const int ms) {
@@ -106,7 +111,7 @@ Pose EGMInterface::waitConnection(const int ms) {
 Pose EGMInterface::waitForPose(const int timeout) {
     // Wait for a new EGM message from the EGM client (with a timeout in ms).
     if (!egm_interface_ptr_->waitForMessage(timeout))
-        throw simple_interface::EGMWarnException("WaitForPose: Timeout");
+        throw EGMWarnException("WaitForPose: Timeout");
 
     // Read the message received from the EGM client
     egm_interface_ptr_->read(&input_);

@@ -1,5 +1,6 @@
 #include "simple_interface.hpp"
 #include <abb_libegm/egm_controller_interface.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -24,12 +25,12 @@ int TEST_TYPE = 0;
 void logger(const boost::shared_ptr<simple_interface::EGMInterface> &EGM,
             const int TIMEOUT) {
     while (true) {
-       try {
+        try {
             // Get current pose
             auto pose = EGM->waitForPose(500);
             std::cout << pose << std::endl;
 
-        } catch (simple_interface::EGMException &warn) {  // catch timeout
+        } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
             std::cerr << warn.getInfo() << std::endl;
         }
         boost::this_thread::sleep(boost::posix_time::milliseconds(TIMEOUT));
@@ -37,7 +38,7 @@ void logger(const boost::shared_ptr<simple_interface::EGMInterface> &EGM,
 }
 
 void delay(const double seconds) {
-    boost::this_thread::sleep(boost::posix_time::milliseconds(seconds * 1000));
+    boost::this_thread::sleep(boost::posix_time::milliseconds((int)(seconds * 1000)));
 }
 
 
@@ -294,7 +295,7 @@ int main(int argc, char *argv[]) {
 
     } catch (simple_interface::EGMErrorException &err) {
         std::cout << err.getInfo() << std::endl;
-        thread_group.remove_thread(egm_logger);
+        // thread_group.remove_thread(egm_logger);
     }
 
 

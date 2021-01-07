@@ -4,51 +4,80 @@
 
 namespace joystick_interface {
 
-JoystickInterface::JoystickInterface(boost::asio::io_service &io_service,
-                                     boost::thread_group &thread_group, const int port) {
-    port_ = port;
-    socket_ptr_.reset(new boost::asio::ip::udp::socket(
-        io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port_)));
 
-    wait();
-
-    std::cout << "Receiving\n";
-    thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
-    std::cout << "Receiver exit\n";
+// JoystickStatus =======================================================================
+std::string JoystickStatus::to_string() {
+    std::string ret = std::to_string(axis0);
+    ret.append("/");
+    ret.append(std::to_string(axis1));
+    ret.append("/");
+    ret.append(std::to_string(axis2));
+    ret.append("/");
+    ret.append(std::to_string(axis3));
+    ret.append("/");
+    ret.append(std::to_string(quit));
+    return ret;
 }
 
-void JoystickInterface::handle_receive(const boost::system::error_code &error,
-                                       size_t bytes_transferred) {
-    if (error) {
-        std::cout << "Receive failed: " << error.message() << "\n";
-        return;
-    }
-    std::string msg =
-        std::string(recv_buffer_.begin(), recv_buffer_.begin() + bytes_transferred);
-    // std::cout << "Received: '" << msg << "'\n";
-    status_ = JoystickStatus::parse(msg);
-
-    if (!status_.quit)
-        wait();
+JoystickStatus JoystickStatus::parse(std::string &sample) {
+    std::vector<std::string> info;
+    boost::split(info, sample, boost::is_any_of("/"));
+    return JoystickStatus{std::stoi(info[0]), std::stoi(info[1]), std::stoi(info[2]),
+                          std::stoi(info[3]), static_cast<bool>(std::stoi(info[4]))};
 }
 
-void JoystickInterface::wait() {
-    socket_ptr_->async_receive_from(
-        boost::asio::buffer(recv_buffer_), remote_endpoint_,
-        boost::bind(&JoystickInterface::handle_receive, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred));
-}
 
-JoystickStatus JoystickInterface::read() {
-    return status_;
+
+// JoystickInterface ====================================================================
+JoystickInterface::JoystickInterface(boost::thread_group &thread_group) {
+    thread_group.create_thread(boost::bind(&JoystickInterface::handle_joystick, this));
+    // joystick_thread_ =
+    //     new boost::thread(boost::bind(&JoystickInterface::handle_joystick, this));
 }
 
 JoystickInterface::~JoystickInterface() {
-    if (socket_ptr_) {
-        socket_ptr_->close();
-        socket_ptr_.reset();
+    // std::cout << "DELETE JOYSTICK INTERFACE" << std::endl;
+}
+
+void JoystickInterface::handle_joystick() {
+    if (SDL_Init(SDL_INIT_JOYSTICK) < 0)
+        throw JoyErrorException("Couldn't initialize SDL");
+
+    int num_joysticks = SDL_NumJoysticks();
+    std::cout << num_joysticks << " joysticks were found." << std::endl;
+    if (num_joysticks == 0) {
+        SDL_Quit();
+        throw JoyErrorException("0 Joysticks were found");
     }
+
+    SDL_JoystickEventState(SDL_ENABLE);
+    auto joy = SDL_JoystickOpen(0);
+
+    bool done = false;
+    bool quit = false;
+    while (!done && !quit) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT)
+                done = true;
+        }
+
+        status_ =
+            JoystickStatus{SDL_JoystickGetAxis(joy, 0), -SDL_JoystickGetAxis(joy, 1),
+                           SDL_JoystickGetAxis(joy, 2), -SDL_JoystickGetAxis(joy, 3),
+                           quit = (SDL_JoystickGetButton(joy, 9) != 0)};
+        // std::cout << status_.to_string() << std::endl;
+        // fflush(stdout);
+    }
+
+    // Shutdown
+    SDL_JoystickClose(joy);
+    SDL_Quit();
+}
+
+
+JoystickStatus JoystickInterface::read() {
+    return status_;
 }
 
 }  // namespace joystick_interface

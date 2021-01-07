@@ -5,16 +5,14 @@
 #include <string>
 
 
-namespace simple_interface {
-
-
-class EGMException : public std::exception {
+namespace auxiliary_interfaces {
+class AUXException : public std::exception {
   protected:
     const std::string msg_;
     const int color_;  // default is white
 
   public:
-    EGMException(const std::string msg, const int color = 37)
+    AUXException(const std::string msg, const int color = 37)
         : std::exception(), msg_(msg), color_(color){};
 
     const char *what() const noexcept {
@@ -30,16 +28,35 @@ class EGMException : public std::exception {
         return colorful_msg;
     }
 };
+}  // namespace auxiliary_interfaces
 
-class EGMErrorException : public EGMException {
+
+
+namespace simple_interface {
+class EGMErrorException : public auxiliary_interfaces::AUXException {
   public:
-    EGMErrorException(const std::string msg) : EGMException(msg, 31){};
+    EGMErrorException(const std::string msg)
+        : auxiliary_interfaces::AUXException(msg, 31){};
 };
 
-class EGMWarnException : public EGMException {
+class EGMWarnException : public auxiliary_interfaces::AUXException {
   public:
-    EGMWarnException(const std::string msg) : EGMException(msg, 33){};
+    EGMWarnException(const std::string msg)
+        : auxiliary_interfaces::AUXException(msg, 33){};
 };
-
-
 }  // namespace simple_interface
+
+
+
+namespace joystick_interface {
+class JoyErrorException : public auxiliary_interfaces::AUXException {
+  public:
+    JoyErrorException(const std::string msg)
+        : auxiliary_interfaces::AUXException(msg, 31){};
+};
+class JoyWarnException : public auxiliary_interfaces::AUXException {
+  public:
+    JoyWarnException(const std::string msg)
+        : auxiliary_interfaces::AUXException(msg, 33){};
+};
+}  // namespace joystick_interface

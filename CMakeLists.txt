@@ -10,6 +10,9 @@ FIND_PACKAGE(Boost REQUIRED COMPONENTS regex system thread)
 # Google protobuffer
 FIND_PACKAGE(Protobuf REQUIRED)
 
+# SDL2
+FIND_PACKAGE(SDL2 REQUIRED)
+
 # Require c++ standard
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,11 +38,13 @@ get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 SET(LIBRERIES
     ${Boost_LIBRARIES}
     ${PROTOBUF_LIBRARIES}
+    ${SDL2_LIBRARIES}
     ${PARENT_DIR}/abb_libegm/build/libabb_libegm.${PLATFORM_LIB}
 )
 SET(INCLUDES
     ${Boost_INCLUDE_DIR}
     ${PROTOBUF_INCLUDE_DIRS}
+    ${SDL2_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/include
     ${PARENT_DIR}/abb_libegm/include/
     ${PARENT_DIR}/abb_libegm/build/
@@ -76,10 +81,9 @@ ENDIF()
 
 # Build Sources
 SET(FILES_NAME 
-    # "raw_controller" 
-    # "simple_controller" 
-    # "keyboard_controller"
-    # "test_controller"
+    "raw_controller" 
+    "simple_controller" 
+    "test_controller"
     "joystick_controller"
 )
 FOREACH(NAME ${FILES_NAME})

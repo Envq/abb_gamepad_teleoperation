@@ -3,8 +3,6 @@
 #include "custom_exceptions.hpp"
 #include <abb_libegm/egm_controller_interface.h>
 #include <iostream>
-#include <math.h>
-
 
 
 namespace simple_interface {
@@ -37,9 +35,9 @@ class Pose {
 class Workspace {
   private:
     // the origin is in the center
-    int x_;
-    int y_;
-    int z_;
+    int x_;  // [mm]
+    int y_;  // [mm]
+    int z_;  // [mm]
     Pose origin_;
 
   public:
@@ -59,6 +57,7 @@ class EGMInterface {
     // * Provides APIs to the user (for setting motion references, that are sent in reply
     // to the EGM client's request).
     boost::shared_ptr<abb::egm::EGMControllerInterface> egm_interface_ptr_;
+    boost::thread *egm_thread_;
 
     // Message for egm communication
     abb::egm::wrapper::Input input_;
@@ -77,6 +76,7 @@ class EGMInterface {
   public:
     EGMInterface(boost::asio::io_service &io_service, boost::thread_group &thread_group,
                  const int port, const double egm_rate, const abb_robots::Robot &robot);
+    ~EGMInterface();
     // Wait the start of the connection and then return current pose.
     Pose waitConnection(const int ms = 500);
     // Wait the current pose else throw exception.

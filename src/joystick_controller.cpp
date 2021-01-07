@@ -24,52 +24,41 @@ int main(int argc, char **argv) {
     boost::shared_ptr<joystick_interface::JoystickInterface> joy_ptr;
 
     try {
-        // egm_ptr.reset(new simple_interface::EGMInterface(
-        //     io_service, thread_group, EGM_PORT, EGM_RATE, abb_robots::IRB_1100));
+        egm_ptr.reset(new simple_interface::EGMInterface(
+            io_service, thread_group, EGM_PORT, EGM_RATE, abb_robots::IRB_1100));
 
-        joy_ptr.reset(new joystick_interface::JoystickInterface(io_service, thread_group,
-                                                                JOY_PORT));
+        joy_ptr.reset(new joystick_interface::JoystickInterface(thread_group));
 
-        // std::cout << "2: Wait for an EGM communication session to start..." <<
-        // std::endl; auto initial_pose = egm_ptr->waitConnection();
+        std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
+        auto initial_pose = egm_ptr->waitConnection();
 
-        // std::cout << "3: Start control loop..." << std::endl;
-        // const int TIMEOUT = 400;  // [ms].
+        std::cout << "3: Start control loop..." << std::endl;
+        const int TIMEOUT = 400;  // [ms].
+        const int WS_RANGE = 50;  // [mm]
+        egm_ptr->setWorkspace(initial_pose, WS_RANGE);
 
         while (true) {
             try {
-                // Get current pose
-                // auto pose = egm_ptr->waitForPose(TIMEOUT);
-                // std::cout << pose << std::endl;
-
-                // Perform and update current target pose
-                // auto target = initial_pose;
+                // Get Joystick status
                 auto joy_status = joy_ptr->read();
-                std::cout << joy_status.to_string() << std::endl;
+                // std::cout << joy_status.to_string() << std::endl;
 
+                // Check if quit
                 if (joy_status.quit)
                     break;
 
-                // switch (joy_info.axis) {
-                // case 0:
-                //     target.x += joy_status.value;
-                //     break;
+                // Get current pose
+                auto pose = egm_ptr->waitForPose(TIMEOUT);
+                std::cout << pose << std::endl;
 
-                // case 1:
-                //     target.y += joy_status.value;
-                //     break;
-
-                // case 3:
-                //     target.z += joy_status.value;
-                //     break;
-
-                // default:
-                //     break;
-                // }
+                // Perform and update current target pose
+                auto target = initial_pose;
+                target.x += (joy_status.axis0 / 32767.0) * WS_RANGE;
+                target.y += (joy_status.axis1 / 32767.0) * WS_RANGE;
+                target.z += (joy_status.axis3 / 32767.0) * WS_RANGE;
 
                 // Send new pose
-                // egm_ptr->sendPose(target);
-                // boost::this_thread::sleep(boost::posix_time::seconds(1));
+                egm_ptr->sendPose(target);
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;
@@ -77,8 +66,13 @@ int main(int argc, char **argv) {
         }
     } catch (simple_interface::EGMErrorException &err) {
         std::cout << err.getInfo() << std::endl;
+
+    } catch (joystick_interface::JoyErrorException &err) {
+        std::cout << err.getInfo() << std::endl;
     }
 
+
+    std::cout << "4: Shutdown..." << std::endl;
     // Clean Shutdown
     io_service.stop();
     thread_group.join_all();
