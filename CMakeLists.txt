@@ -16,7 +16,6 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
 
-
 # CONFIGS ################################################################################
 # Add warnings
 # ADD_COMPILE_OPTIONS("-Wall")
@@ -24,17 +23,26 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 # ADD_COMPILE_OPTIONS("-Wpedantic")
 # ADD_COMPILE_OPTIONS("-Werror")
 
+IF (APPLE)
+    SET (PLATFORM_LIB "dylib")
+ELSEIF (UNIX)
+    SET (PLATFORM_LIB "so")
+ENDIF()
+
+get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
+
+
 SET(LIBRERIES
     ${Boost_LIBRARIES}
     ${PROTOBUF_LIBRARIES}
-    /workspaces/abb_libegm/build/libabb_libegm.so
+    ${PARENT_DIR}/abb_libegm/build/libabb_libegm.${PLATFORM_LIB}
 )
 SET(INCLUDES
     ${Boost_INCLUDE_DIR}
     ${PROTOBUF_INCLUDE_DIRS}
-    /workspaces/abb_libegm/include/
-    /workspaces/abb_libegm/build/
     ${PROJECT_SOURCE_DIR}/include
+    ${PARENT_DIR}/abb_libegm/include/
+    ${PARENT_DIR}/abb_libegm/build/
 )
 SET(SOURCES
     ${PROJECT_SOURCE_DIR}/src/auxiliary_interfaces/simple_interface.cpp
