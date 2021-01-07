@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/workspaces/abb_libegm/include/**",
-                "/workspaces/abb_libegm/build/**"
+                "../abb_libegm/include/**",
+                "../abb_libegm/build/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
