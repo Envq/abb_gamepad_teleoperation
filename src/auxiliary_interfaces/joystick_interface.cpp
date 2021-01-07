@@ -26,9 +26,9 @@ void JoystickInterface::handle_receive(const boost::system::error_code &error,
     std::string msg =
         std::string(recv_buffer_.begin(), recv_buffer_.begin() + bytes_transferred);
     // std::cout << "Received: '" << msg << "'\n";
-    last_info_ = JoystickInfo::parse(msg);
+    status_ = JoystickStatus::parse(msg);
 
-    if (!last_info_.quit)
+    if (!status_.quit)
         wait();
 }
 
@@ -40,8 +40,8 @@ void JoystickInterface::wait() {
                     boost::asio::placeholders::bytes_transferred));
 }
 
-JoystickInfo JoystickInterface::read() {
-    return last_info_;
+JoystickStatus JoystickInterface::read() {
+    return status_;
 }
 
 JoystickInterface::~JoystickInterface() {

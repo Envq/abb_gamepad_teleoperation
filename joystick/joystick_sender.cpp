@@ -3,8 +3,8 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/thread.hpp>
 #include <iostream>
-#include <thread>
 
 #define IPADDRESS "127.0.0.1"
 #define UDP_PORT 6511
@@ -24,30 +24,36 @@ void Sender(std::string in) {
     socket.close();
 }
 
-struct JoystickInfo {
-    int axis;
-    int value;
+struct JoystickStatus {
+    int axis0;  // Left x
+    int axis1;  // Left y
+    int axis2;  // Right x
+    int axis3;  // Right y
     bool quit;
 
     std::string to_string() {
-        std::string ret = std::to_string(axis);
+        std::string ret = std::to_string(axis0);
         ret.append("/");
-        ret.append(std::to_string(value));
+        ret.append(std::to_string(axis1));
+        ret.append("/");
+        ret.append(std::to_string(axis2));
+        ret.append("/");
+        ret.append(std::to_string(axis3));
         ret.append("/");
         ret.append(std::to_string(quit));
         return ret;
     }
 
-    static JoystickInfo parse(std::string &sample) {
+    static JoystickStatus parse(std::string &sample) {
         std::vector<std::string> info;
         boost::split(info, sample, boost::is_any_of("/"));
-        return JoystickInfo{std::stoi(info[0]), std::stoi(info[1]),
-                            static_cast<bool>(std::stoi(info[2]))};
+        return JoystickStatus{std::stoi(info[0]), std::stoi(info[1]), std::stoi(info[2]),
+                              std::stoi(info[3]), static_cast<bool>(std::stoi(info[4]))};
     }
 };
 
 int main() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
+    if (SDL_Init(SDL_INIT_JOYSTICK) < 0) {
         std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << std::endl;
         exit(1);
     }
@@ -59,46 +65,31 @@ int main() {
         return 0;
     }
 
-
-    SDL_Joystick *joystick;
     SDL_JoystickEventState(SDL_ENABLE);
-    joystick = SDL_JoystickOpen(0);
+    auto joy = SDL_JoystickOpen(0);
 
-    SDL_Event event;
-    while (true) {
+    bool done = false;
+    bool quit = false;
+    while (!done && !quit) {
+        SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_QUIT:
-                SDL_JoystickClose(joystick);
-                SDL_Quit();
-                return 0;
-
-            case SDL_JOYBUTTONDOWN:
-                std::cout << "Pressed button: " << (int)event.jbutton.button << std::endl;
-                if (event.jbutton.button == 9) {
-                    Sender(JoystickInfo{0, 0, true}.to_string());
-                    SDL_JoystickClose(joystick);
-                    SDL_Quit();
-                    return 0;
-                }
-
-                break;
-
-            case SDL_JOYAXISMOTION:
-                std::cout << "Axis" << (int)event.jaxis.axis << ": " << event.jaxis.value
-                          << std::endl;
-                Sender(
-                    JoystickInfo{event.jaxis.axis, event.jaxis.value, false}.to_string());
-
-                break;
-            }
-
-            fflush(stdout);
+            if (event.type == SDL_QUIT)
+                done = true;
         }
+
+        auto status =
+            JoystickStatus{SDL_JoystickGetAxis(joy, 0), SDL_JoystickGetAxis(joy, 1),
+                           SDL_JoystickGetAxis(joy, 2), SDL_JoystickGetAxis(joy, 3),
+                           quit = (SDL_JoystickGetButton(joy, 9) != 0)};
+
+        Sender(status.to_string());
+        std::cout << status.to_string() << std::endl;
+        fflush(stdout);
     }
 
+
     // Shutdown
-    SDL_JoystickClose(joystick);
+    SDL_JoystickClose(joy);
     SDL_Quit();
     return 0;
 }
