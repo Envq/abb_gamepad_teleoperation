@@ -232,7 +232,6 @@ int main(int argc, char *argv[]) {
             std::cout << "Go to point2" << std::endl;
             offset = 10.0;
             violation = 0.0;
-            std::cout << offset << std::endl;
             while (true) {
                 target = egm_ptr->waitForPose(TIMEOUT);
                 target.y += offset;

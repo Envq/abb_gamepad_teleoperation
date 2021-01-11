@@ -41,13 +41,17 @@ class Workspace {
     Pose origin_;
 
   public:
+    // Initializes the workspace as a parallelepiped
     void init(const Pose &origin, const int x, const int y, const int z);
     void init(const Pose &origin, const int size);
 
+    // Return true if this pose is inside the workspace
     bool insideX(const Pose &pose, const double delta);
     bool insideY(const Pose &pose, const double delta);
     bool insideZ(const Pose &pose, const double delta);
 
+    // If this pose is out of the workspace it is corrected and returned, otherwise it
+    // returns it unchanged
     Pose adjustPose(const Pose &pose);
 };
 
@@ -88,7 +92,7 @@ class EGMInterface {
     // Set the workspace (size in mm)
     void setWorkspace(const Pose &origin, const int x, const int y, const int z);
     void setWorkspace(const Pose &origin, const int size);
-    // Check if this pose violates the constraints of the workspace
+    // Return true if this pose violates the constraints of the workspace
     bool workspaceViolations(const Pose &pose, const double delta = 0.0);
     bool workspaceViolationX(const Pose &pose, const double delta = 0.0);
     bool workspaceViolationY(const Pose &pose, const double delta = 0.0);
