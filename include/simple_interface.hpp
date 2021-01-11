@@ -47,6 +47,8 @@ class Workspace {
     bool insideX(const Pose &pose, const double delta);
     bool insideY(const Pose &pose, const double delta);
     bool insideZ(const Pose &pose, const double delta);
+
+    Pose adjustPose(const Pose &pose);
 };
 
 
@@ -81,7 +83,7 @@ class EGMInterface {
     Pose waitConnection(const int ms = 500);
     // Wait the current pose else throw exception.
     Pose waitForPose(const int timeout);
-    // Sent to EGM client new pose.
+    // Send to EGM client new pose.
     void sendPose(const Pose &pose);
     // Set the workspace (size in mm)
     void setWorkspace(const Pose &origin, const int x, const int y, const int z);
@@ -91,5 +93,7 @@ class EGMInterface {
     bool workspaceViolationX(const Pose &pose, const double delta = 0.0);
     bool workspaceViolationY(const Pose &pose, const double delta = 0.0);
     bool workspaceViolationZ(const Pose &pose, const double delta = 0.0);
+    // Send to EGM client a new pose inside the workspace (checkViolation and adjust).
+    Pose sendSafePose(const Pose &pose);
 };
 }  // namespace simple_interface

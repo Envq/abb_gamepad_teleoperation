@@ -62,9 +62,23 @@ bool Workspace::insideZ(const Pose &pose, const double delta) {
     return (pose.z >= (origin_.z - z_ - delta) && pose.z <= (origin_.z + z_ + delta));
 }
 
+Pose Workspace::adjustPose(const Pose &pose) {
+    auto target = pose;
+    target.x = (pose.x < origin_.x - x_)   ? origin_.x - x_
+               : (pose.x > origin_.x + x_) ? origin_.x + x_
+                                           : target.x;
+    target.y = (pose.y < origin_.y - y_)   ? origin_.y - y_
+               : (pose.y > origin_.y + y_) ? origin_.y + y_
+                                           : target.y;
+    target.z = (pose.z < origin_.z - z_)   ? origin_.z - z_
+               : (pose.z > origin_.z + z_) ? origin_.z + z_
+                                           : target.z;
+    return target;
+}
 
 
-// EGMInteface ===========================================================================
+// EGMInteface
+// ===========================================================================
 EGMInterface::EGMInterface(boost::asio::io_service &io_service,
                            boost::thread_group &thread_group, const int port,
                            const double egm_rate, const abb_robots::Robot &robot)
@@ -165,6 +179,12 @@ bool EGMInterface::workspaceViolationY(const Pose &pose, const double delta) {
 
 bool EGMInterface::workspaceViolationZ(const Pose &pose, const double delta) {
     return !workspace_.insideZ(pose, delta);
+}
+
+Pose EGMInterface::sendSafePose(const Pose &pose) {
+    auto target = workspace_.adjustPose(pose);
+    sendPose(target);
+    return target;
 }
 
 

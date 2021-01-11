@@ -62,10 +62,14 @@ void JoystickInterface::handle_joystick() {
                 done = true;
         }
 
-        status_ =
+        auto joy_status =
             JoystickStatus{SDL_JoystickGetAxis(joy, 0), -SDL_JoystickGetAxis(joy, 1),
                            SDL_JoystickGetAxis(joy, 2), -SDL_JoystickGetAxis(joy, 3),
                            quit = (SDL_JoystickGetButton(joy, 9) != 0)};
+        mutex_.lock();
+        status_ = joy_status;
+        mutex_.unlock();
+
         // std::cout << status_.to_string() << std::endl;
         // fflush(stdout);
     }
@@ -75,9 +79,15 @@ void JoystickInterface::handle_joystick() {
     SDL_Quit();
 }
 
-
 JoystickStatus JoystickInterface::read() {
-    return status_;
+    mutex_.lock();
+    auto joy_status = status_;
+    mutex_.unlock();
+    return joy_status;
+}
+
+double JoystickInterface::getJoystickMaxVal() {
+    return maxVal_;
 }
 
 }  // namespace joystick_interface

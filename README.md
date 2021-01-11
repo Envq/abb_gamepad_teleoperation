@@ -105,7 +105,14 @@ This example runs some tests that can be called up with the relative number per 
 
 ### **joystick_controller**
 This example performs teleoperation using a joystick (tested with logitech f310).
-Since on macos and windows I can't access the joystick from inside the docker container, joystick_interface and consequently joystick_controller are only executable from the host. Additional installation of [SDL2](https://www.libsdl.org/download-2.0.php) is required
+
+Since on macos and windows I can't access the joystick from inside the docker container, joystick_interface and consequently joystick_controller are only executable from the host. Additional installation of [SDL2](https://www.libsdl.org/download-2.0.php) is required.
+
+For Execute joystick task in a cube of 25mm (default is 50mm) from initial pose use it: 
+
+~~~
+./joystick_controller 25
+~~~
 
 
 ---
