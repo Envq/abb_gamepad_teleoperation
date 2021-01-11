@@ -1,3 +1,4 @@
+#include "colors.hpp"
 #include "joystick_interface.hpp"
 #include "simple_interface.hpp"
 #include <iostream>
@@ -72,7 +73,9 @@ int main(int argc, char **argv) {
 
                 // Notify correction
                 if (corr != target)
-                    std::cout << "WORKSPACE VIOLATION: correction occured. " << std::endl;
+                    std::cout << colorize("WORKSPACE VIOLATION: correction occured.",
+                                          Colors::FG_GREEN)
+                              << std::endl;
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;

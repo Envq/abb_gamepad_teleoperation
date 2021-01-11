@@ -37,6 +37,7 @@ JoystickInterface::JoystickInterface(boost::thread_group &thread_group) {
 
 JoystickInterface::~JoystickInterface() {
     // std::cout << "DELETE JOYSTICK INTERFACE" << std::endl;
+    SDL_Quit();
 }
 
 void JoystickInterface::handle_joystick() {
