@@ -84,6 +84,7 @@
         "stack": "cpp",
         "unordered_set": "cpp",
         "variant": "cpp",
-        "strstream": "cpp"
+        "strstream": "cpp",
+        "filesystem": "cpp"
     }
 }

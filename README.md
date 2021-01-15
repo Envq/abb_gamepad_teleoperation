@@ -74,7 +74,7 @@ Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.
 ## **Examples**
 All examples are launchable inside docker apart from joystick_controller. 
 
-A class (simple_interface) that wraps around abb_libegm has been created that simplifies its use, added exceptions (custom_exception) and a class (joystick_interface) to be launched on the host to read the joystick values using [SDL2](https://www.libsdl.org/download-2.0.php).
+A class (simple_interface) that wraps around abb_libegm has been created that simplifies its use, added some utilities (custom_exception, custom_utils) and a class (joystick_interface) to be launched on the host to read the joystick values using [SDL2](https://www.libsdl.org/download-2.0.php).
 
 
 ### **abb_examples/**
@@ -113,6 +113,14 @@ For Execute joystick task in a cube of 25mm (default is 50mm) from initial pose 
 ~~~
 ./joystick_controller 25
 ~~~
+Commands:
+- Button START -> exit from task
+- JoystickL and JoystickR -> control end effector position relative to the initial pose.
+- Button LB -> set Origin
+- Button B -> increment strength
+- Button X -> decrement strength
+
+Note: default strenght is 50 mm. (this value represents the maximum distance that can be reached by moving the joystick)
 
 
 ---

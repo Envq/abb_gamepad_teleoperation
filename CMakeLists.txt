@@ -51,6 +51,7 @@ SET(INCLUDES
 )
 SET(SOURCES
     ${PROJECT_SOURCE_DIR}/src/auxiliary_interfaces/simple_interface.cpp
+    ${PROJECT_SOURCE_DIR}/src/auxiliary_interfaces/custom_utils.cpp
 )
 
 IF (APPLE)

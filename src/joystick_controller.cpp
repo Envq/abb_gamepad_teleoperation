@@ -9,12 +9,14 @@
 const int EGM_PORT = 6510;
 const int JOY_PORT = 6511;
 const double EGM_RATE = 250.0;  // [hz]
-const int JOY_RANGE = 50;       // [mm]
 int WS_RANGE = 50;              // [mm]
+const int EGM_TIMEOUT = 400;    // [ms]
+const Colors NOTIFY_COLOR = Colors::FG_CYAN;
 
 
 
-// MAIN ==================================================================================
+// MAIN
+// ==================================================================================
 int main(int argc, char **argv) {
     std::cout << "========== Simple Controller ==========" << std::endl;
     std::cout << "1: Initialize..." << std::endl;
@@ -42,31 +44,39 @@ int main(int argc, char **argv) {
         joy_ptr.reset(new joystick_interface::JoystickInterface(thread_group));
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
-        auto initial_pose = egm_ptr->waitConnection();
+        auto origin = egm_ptr->waitConnection();
+        egm_ptr->setWorkspace(origin, WS_RANGE);
 
         std::cout << "3: Start control loop..." << std::endl;
-        const int TIMEOUT = 400;  // [ms]
-        egm_ptr->setWorkspace(initial_pose, WS_RANGE);
-
         while (true) {
             try {
-                // Get Joystick status
-                auto joy_status = joy_ptr->read();
-                // std::cout << joy_status.to_string() << std::endl;
+                // Get current pose (implicit sync to EGM rate)
+                auto current_pose = egm_ptr->waitForPose(EGM_TIMEOUT);
+                std::cout << colorize("Current Pose: ", NOTIFY_COLOR) << std::endl;
+                std::cout << current_pose << std::endl;
+
+                // Get Joystick info
+                auto joy_info = joy_ptr->readInfo();
+                // std::cout << joy_info.toString() << std::endl;
 
                 // Check if quit
-                if (joy_status.quit)
+                if (joy_info.quit)
                     break;
 
-                // Get current pose
-                auto pose = egm_ptr->waitForPose(TIMEOUT);
-                std::cout << pose << std::endl;
+                // Reset Origin
+                if (joy_info.setOrigin) {
+                    origin = current_pose;
+                    egm_ptr->setWorkspace(origin, WS_RANGE);
+                }
+                std::cout << colorize("Origin Pose: ", NOTIFY_COLOR) << std::endl;
+                std::cout << origin << std::endl;
+
+                // Notify Stretch
+                std::cout << colorize("Stretch: ", NOTIFY_COLOR) << joy_info.stretch
+                          << std::endl;
 
                 // Perform and update current target pose
-                auto target = initial_pose;
-                target.x += (joy_status.axis0 / joy_ptr->getJoystickMaxVal()) * JOY_RANGE;
-                target.y += (joy_status.axis1 / joy_ptr->getJoystickMaxVal()) * JOY_RANGE;
-                target.z += (joy_status.axis3 / joy_ptr->getJoystickMaxVal()) * JOY_RANGE;
+                auto target = origin + joy_info.pose;
 
                 // Send new pose
                 auto corr = egm_ptr->sendSafePose(target);
@@ -74,8 +84,10 @@ int main(int argc, char **argv) {
                 // Notify correction
                 if (corr != target)
                     std::cout << colorize("WORKSPACE VIOLATION: correction occured.",
-                                          Colors::FG_GREEN)
+                                          NOTIFY_COLOR)
                               << std::endl;
+
+                std::cout << "============================================" << std::endl;
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;
