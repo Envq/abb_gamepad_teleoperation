@@ -26,9 +26,11 @@ struct LogitechF310 {  // Direct-input Mode
     static const int SELECT = 8;
     static const int JOY_LEFT = 10;
     static const int JOY_RIGHT = 11;
+    static const int AXIS_MAX_VALUE = 32768;  // Range: -32768 to 32767
     static const int AXIS0_ORIGIN = 128;
     static const int AXIS1_ORIGIN = 129;
     static const int AXIS2_ORIGIN = 129;
+    static const int AXIS_THRESHOLD = 2000;
 };  // namespace LogitechF310
 
 const int AXIS_X = LogitechF310::JOY_LEFT_HORIZONTAL;
@@ -41,6 +43,8 @@ const int QUIT = LogitechF310::START;
 const int AXIS_X_ORIGIN = LogitechF310::AXIS0_ORIGIN;
 const int AXIS_Y_ORIGIN = LogitechF310::AXIS1_ORIGIN;
 const int AXIS_Z_ORIGIN = LogitechF310::AXIS2_ORIGIN;
+const int AXIS_MAX_VALUE = LogitechF310::AXIS_MAX_VALUE;
+const int AXIS_THRESHOLD = LogitechF310::AXIS_THRESHOLD;
 const int GRANULARITY = 5;       // [mm]
 const int DEFAULT_STRETCH = 30;  // [mm]
 }  // namespace config
@@ -91,16 +95,15 @@ struct JoystickState {
 
 class JoystickInterface {
   private:
-    const double maxVal_ = 32768.0;          // Range: -32768 to 32767
-    boost::mutex mutex_;                     // for avoid race condition
-    JoystickState state_;                    // joystick state
-    int stretch_ = config::DEFAULT_STRETCH;  // current stretch
-    bool setOrigin_last_ = false;            // for avoid repeated setting
-    int stretchRequest_last_ = 0;            // for avoid repeated setting
-    void handle_joystick();                  // thread function
+    boost::mutex mutex_;           // for avoid race condition
+    JoystickState state_;          // joystick state
+    int stretch_;                  // current stretch
+    bool setOrigin_last_ = false;  // for avoid repeated setting
+    int stretchRequest_last_ = 0;  // for avoid repeated setting
+    void handle_joystick();        // thread function
 
   public:
-    JoystickInterface(boost::thread_group &thread_group);
+    JoystickInterface(boost::thread_group &thread_group, const int stretch);
     ~JoystickInterface();
 
     JoystickState readState();

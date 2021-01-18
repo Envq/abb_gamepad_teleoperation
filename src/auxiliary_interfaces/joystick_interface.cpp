@@ -33,7 +33,8 @@ std::string JoystickState::toString() {
 
 
 // JoystickInterface ====================================================================
-JoystickInterface::JoystickInterface(boost::thread_group &thread_group) {
+JoystickInterface::JoystickInterface(boost::thread_group &thread_group, const int stretch)
+    : stretch_(stretch) {
     thread_group.create_thread(boost::bind(&JoystickInterface::handle_joystick, this));
 }
 
@@ -75,10 +76,13 @@ void JoystickInterface::handle_joystick() {
                           (SDL_JoystickGetButton(joy, config::SET_ORIGIN) != 0),
                           quit = (SDL_JoystickGetButton(joy, config::QUIT) != 0)};
 
-        // Adjust strength request. Set it to zero if the axis are different from 0.
-        if (joy_state.axisX != config::AXIS_X_ORIGIN ||
-            joy_state.axisY != config::AXIS_Y_ORIGIN ||
-            joy_state.axisZ != config::AXIS_Z_ORIGIN)
+        // Adjust strength request. Set it to zero if the axis are different from Origin.
+        if ((joy_state.axisX < (config::AXIS_X_ORIGIN - config::AXIS_THRESHOLD)) ||
+            (joy_state.axisX > (config::AXIS_X_ORIGIN + config::AXIS_THRESHOLD)) ||
+            (joy_state.axisY < (config::AXIS_Y_ORIGIN - config::AXIS_THRESHOLD)) ||
+            (joy_state.axisY > (config::AXIS_Y_ORIGIN + config::AXIS_THRESHOLD)) ||
+            (joy_state.axisZ < (config::AXIS_Z_ORIGIN - config::AXIS_THRESHOLD)) ||
+            (joy_state.axisZ > (config::AXIS_Z_ORIGIN + config::AXIS_THRESHOLD)))
             joy_state.stretchRequest = 0;
 
         // Update state
@@ -86,6 +90,7 @@ void JoystickInterface::handle_joystick() {
         state_ = joy_state;
         mutex_.unlock();
 
+        // DEBUG PRINT
         // std::cout << joy_state.toString() << std::endl;
         // fflush(stdout);
         // boost::this_thread::sleep(boost::posix_time::millisec(100));
@@ -113,9 +118,9 @@ JoystickInfo JoystickInterface::readInfo() {
     stretchRequest_last_ = state_.stretchRequest;  // Update last_
     info.stretch = stretch_;
 
-    info.pose.x = (state_.axisX / maxVal_) * stretch_;
-    info.pose.y = (state_.axisY / maxVal_) * stretch_;
-    info.pose.z = (state_.axisZ / maxVal_) * stretch_;
+    info.pose.x = (state_.axisX / static_cast<double>(config::AXIS_MAX_VALUE)) * stretch_;
+    info.pose.y = (state_.axisY / static_cast<double>(config::AXIS_MAX_VALUE)) * stretch_;
+    info.pose.z = (state_.axisZ / static_cast<double>(config::AXIS_MAX_VALUE)) * stretch_;
     info.pose.roll = 0.0;
     info.pose.pitch = 0.0;
     info.pose.yaw = 0.0;

@@ -37,6 +37,11 @@ enum Colors {
     BG_CYAN_BRIGHT = 106,
     FG_WHITE_BRIGHT = 97,
     BG_WHITE_BRIGHT = 107,
+    BOLD = 1,
+    FAINT = 2,
+    UNDERLINE = 4,
+    DOUBLE_UNDERLINE = 21,
+    BLINK = 5,
 };
 
 

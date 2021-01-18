@@ -3,15 +3,14 @@
 
 // Pose =================================================================================
 std::ostream &operator<<(std::ostream &stream, const Pose &pose) {
-    stream << "Pose:" << std::endl;
-    stream << "- Position:\t";
-    stream << "x: " << pose.x;
-    stream << "\ty: " << pose.y;
-    stream << "\t\tz: " << pose.z << std::endl;
-    stream << "- Orientation:\t";
-    stream << "roll: " << pose.roll;
-    stream << "\tpitch: " << pose.pitch;
-    stream << "\tyaw: " << pose.yaw << std::endl;
+    stream << colorize("Position:\t", Colors::BOLD) << std::endl;
+    stream << "- x: " << pose.x << std::endl;
+    stream << "- y: " << pose.y << std::endl;
+    stream << "- z: " << pose.z << std::endl;
+    stream << colorize("Orientation:\t", Colors::BOLD) << std::endl;
+    stream << "- roll:  " << pose.roll << std::endl;
+    stream << "- pitch: " << pose.pitch << std::endl;
+    stream << "- yaw:   " << pose.yaw << std::endl << std::endl;
     return stream;
 }
 

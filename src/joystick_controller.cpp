@@ -6,12 +6,14 @@
 
 
 // CONFIGS ===============================================================================
+const Colors NOTIFY_COLOR = Colors::FG_CYAN;
+const bool PRINT_INFO = true;
 const int EGM_PORT = 6510;
 const int JOY_PORT = 6511;
 const double EGM_RATE = 250.0;  // [hz]
-int WS_RANGE = 50;              // [mm]
 const int EGM_TIMEOUT = 400;    // [ms]
-const Colors NOTIFY_COLOR = Colors::FG_CYAN;
+const int JOY_STRETCH = 20;     // [mm]
+int WS_RANGE = 50;              // [mm]
 
 
 
@@ -41,7 +43,8 @@ int main(int argc, char **argv) {
         egm_ptr.reset(new simple_interface::EGMInterface(
             io_service, thread_group, EGM_PORT, EGM_RATE, abb_robots::IRB_1100));
 
-        joy_ptr.reset(new joystick_interface::JoystickInterface(thread_group));
+        joy_ptr.reset(
+            new joystick_interface::JoystickInterface(thread_group, JOY_STRETCH));
 
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         auto origin = egm_ptr->waitConnection();
@@ -52,8 +55,6 @@ int main(int argc, char **argv) {
             try {
                 // Get current pose (implicit sync to EGM rate)
                 auto current_pose = egm_ptr->waitForPose(EGM_TIMEOUT);
-                std::cout << colorize("Current Pose: ", NOTIFY_COLOR) << std::endl;
-                std::cout << current_pose << std::endl;
 
                 // Get Joystick info
                 auto joy_info = joy_ptr->readInfo();
@@ -68,12 +69,6 @@ int main(int argc, char **argv) {
                     origin = current_pose;
                     egm_ptr->setWorkspace(origin, WS_RANGE);
                 }
-                std::cout << colorize("Origin Pose: ", NOTIFY_COLOR) << std::endl;
-                std::cout << origin << std::endl;
-
-                // Notify Stretch
-                std::cout << colorize("Stretch: ", NOTIFY_COLOR) << joy_info.stretch
-                          << std::endl;
 
                 // Perform and update current target pose
                 auto target = origin + joy_info.pose;
@@ -81,13 +76,24 @@ int main(int argc, char **argv) {
                 // Send new pose
                 auto corr = egm_ptr->sendSafePose(target);
 
-                // Notify correction
-                if (corr != target)
-                    std::cout << colorize("WORKSPACE VIOLATION: correction occured.",
-                                          NOTIFY_COLOR)
+                if (PRINT_INFO) {
+                    // Current Pose
+                    std::cout << colorize("Current Pose: ", NOTIFY_COLOR) << std::endl;
+                    std::cout << current_pose << std::endl;
+                    // Origin Pose
+                    std::cout << colorize("Origin Pose: ", NOTIFY_COLOR) << std::endl;
+                    std::cout << origin << std::endl;
+                    // Stretch
+                    std::cout << colorize("Stretch: ", NOTIFY_COLOR) << joy_info.stretch
                               << std::endl;
+                    // Workspace correction notify
+                    if (corr != target)
+                        std::cout << colorize("WORKSPACE VIOLATION: correction occured.",
+                                              NOTIFY_COLOR)
+                                  << std::endl;
 
-                std::cout << "============================================" << std::endl;
+                    std::cout << "======================" << std::endl;
+                }
 
             } catch (simple_interface::EGMWarnException &warn) {  // catch timeout
                 std::cerr << warn.getInfo() << std::endl;
