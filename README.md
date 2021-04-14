@@ -1,5 +1,15 @@
-# **ABB EGM EXAMPLES**
+# **ABB GAMEPAD TELEOPERATION**
 This repository use [abb_libegm](https://github.com/ros-industrial/abb_libegm) without [ROS](https://www.ros.org) for interact with RobostStudio.
+
+The example files of the libegm have been reported from which we started to create a wrapper aimed at carrying out teleoperation. As a final result it was possible to carry out teleoperation in position using a gamepad.
+
+**Note:** 
+- It was not possible to test with the real robot.
+- docker integration is present, but i could not read gamepad values from windows, so you need to install SDL2 to teleoperate with gamepad.
+- Tested on: master in Macos, slave in Windows.
+
+![telop](doc/teleopABB.gif)[teloperation]
+
 
 ---
 ## **Table of Contents**
@@ -22,10 +32,17 @@ This repository use [abb_libegm](https://github.com/ros-industrial/abb_libegm) w
 ## **Getting Started**
 This project is running in a Docker container and and I use the VSCode Remote-containers extension to develop within it.
 
+**Note:** docker integration is present, but i could not read gamepad values from windows, so you need to install SDL2 to teleoperate with gamepad.
+
 
 ---
 ## **Dependencies**
 Install [Docker](https://www.docker.com) and [VSCode](https://code.visualstudio.com) with [Remote-Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension.
+
+To use without Docker install:
+- Boost
+- Protobuf
+- SDL2
 
 
 ---
@@ -120,7 +137,7 @@ Commands:
 - Button B -> increment strength
 - Button X -> decrement strength
 
-Note: default strenght is 50 mm. (this value represents the maximum distance that can be reached by moving the joystick)
+**Note:** default strenght is 50 mm. (this value represents the maximum distance that can be reached by moving the joystick)
 
 
 ---
@@ -143,7 +160,7 @@ I used these extensions:
 ## **Author**
 **Enrico Sgarbanti** [@**Envq**](https://github.com/Envq).
 
-Note: the [abb_libegm](https://github.com/ros-industrial/abb_libegm) library is used in this project.
+**Note:** the [abb_libegm](https://github.com/ros-industrial/abb_libegm) library is used in this project.
 
 
 ## **License**
