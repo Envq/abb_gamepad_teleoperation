@@ -160,6 +160,8 @@ I used these extensions:
 ## **Author**
 **Enrico Sgarbanti** [@**Envq**](https://github.com/Envq).
 
+Thanks to [Nimbo](http://www.nimbo-srl.com) and [Altair](https://metropolis.scienze.univr.it) for the collaboration.
+
 **Note:** the [abb_libegm](https://github.com/ros-industrial/abb_libegm) library is used in this project.
 
 
