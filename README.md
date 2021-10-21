@@ -8,7 +8,7 @@ The example files of the libegm have been reported from which we started to crea
 - docker integration is present, but i could not read gamepad values from windows, so you need to install SDL2 to teleoperate with gamepad.
 - Tested on: master in Macos, slave in Windows.
 
-![telop](doc/teleopABB.gif)[teloperation]
+![telop](doc/teleopABB.gif)
 
 
 ---
@@ -34,6 +34,8 @@ This project is running in a Docker container and and I use the VSCode Remote-co
 
 **Note:** docker integration is present, but i could not read gamepad values from windows, so you need to install SDL2 to teleoperate with gamepad.
 
+This project was tested with RobotStudio on Windows10 in a machine, and abb_gamepad_teleoperation on Macos10 and Macos11 on another machine.
+
 
 ---
 ## **Dependencies**
@@ -43,6 +45,7 @@ To use without Docker install:
 - Boost
 - Protobuf
 - SDL2
+- [abb_libegm](https://github.com/ros-industrial/abb_libegm) 6613e3165ea68118c31f336ddbb7f970a7b0e489 in the parent directory of abb_gamepad_teleoperation (use cmake for build it.)
 
 
 ---

@@ -1,6 +1,7 @@
 #include "colors.hpp"
 #include "joystick_interface.hpp"
 #include "simple_interface.hpp"
+#include <fstream>
 #include <iostream>
 
 
@@ -38,6 +39,14 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    // Prepare log
+    std::ofstream logFile("joystick_inputs_log.csv");
+    logFile << "double x; "
+            << "double y; "
+            << "double z; "
+            << "double roll; "
+            << "double pitch; "
+            << "double yaw" << std::endl;
 
     try {
         egm_ptr.reset(new simple_interface::EGMInterface(
@@ -49,6 +58,7 @@ int main(int argc, char **argv) {
         std::cout << "2: Wait for an EGM communication session to start..." << std::endl;
         auto origin = egm_ptr->waitConnection();
         egm_ptr->setWorkspace(origin, WS_RANGE);
+
 
         std::cout << "3: Start control loop..." << std::endl;
         while (true) {
@@ -72,6 +82,11 @@ int main(int argc, char **argv) {
 
                 // Perform and update current target pose
                 auto target = origin + joy_info.pose;
+
+                // log target pose
+                logFile << target.x << "; " << target.y << "; " << target.z << "; "
+                        << target.roll << "; " << target.pitch << "; " << target.yaw
+                        << std::endl;
 
                 // Send new pose
                 auto corr = egm_ptr->sendSafePose(target);
@@ -109,6 +124,7 @@ int main(int argc, char **argv) {
 
     std::cout << "4: Shutdown..." << std::endl;
     // Clean Shutdown
+    logFile.close();
     io_service.stop();
     thread_group.join_all();
     return 0;
